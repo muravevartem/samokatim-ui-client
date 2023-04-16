@@ -1,6 +1,7 @@
 import React, {useEffect} from "react";
-import {CloseButton, Divider, Heading, HStack, LinkBox, Text, VStack} from "@chakra-ui/react";
+import {CloseButton, Divider, Heading, HStack, IconButton, LinkBox, Text, VStack} from "@chakra-ui/react";
 import {useNavigate} from "react-router-dom";
+import {MdArrowBack} from "react-icons/md";
 
 export function MenuPage() {
     let navigate = useNavigate();
@@ -11,8 +12,9 @@ export function MenuPage() {
 
     return (
         <VStack w='100%'>
-            <HStack justifyContent='end' w='100%' p={5}>
-                <CloseButton onClick={() => navigate(-1)} color='green'/>
+            <HStack justifyContent='start' w='100%' p={5} spacing={3}>
+                <IconButton icon={<MdArrowBack/>} aria-label={''} onClick={() => navigate(-1)} colorScheme='green'/>
+                <Heading>Меню</Heading>
             </HStack>
             <LinkBox
                 w='100%'

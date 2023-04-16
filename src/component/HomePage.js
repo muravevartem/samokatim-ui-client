@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {
     Alert,
-    AlertIcon,
+    AlertIcon, Avatar,
     Box,
     Button,
     Card,
@@ -12,7 +12,7 @@ import {
     IconButton,
     Input,
     InputGroup,
-    InputLeftElement,
+    InputLeftElement, InputRightElement, Menu, MenuButton, MenuItem, MenuList,
     Slide,
     VStack
 } from "@chakra-ui/react";
@@ -22,9 +22,17 @@ import {errorService} from "../service/ErrorService.js";
 import {events, eventService} from "../service/EventService.js";
 import {MdLocationOn, MdMenu} from "react-icons/md";
 import {useNavigate} from "react-router-dom";
+import {routes} from "../routers.js";
+import {userService} from "../service/UserService.js";
+import {UserAvatar} from "./UserAvatar.js";
 
 export function HomePage() {
     const [openSearch, setOpenSearch] = useState(false);
+    let navigate = useNavigate();
+    useEffect(() => {
+        if (!userService.authenticated())
+            navigate(routes.login)
+    },[])
 
     return (
         <VStack spacing={0} width='100%' minH={'100vh'}>
@@ -171,7 +179,7 @@ function SearchBar({onFocus, onBlur}) {
              width='100%'>
             <InputGroup size='lg'>
                 <Input bgColor='white'
-                       pl='3.5rem'
+                       pl='1rem'
                        display='block'
                        width='100%'
                        placeholder='Поиск...'
@@ -181,14 +189,20 @@ function SearchBar({onFocus, onBlur}) {
                        onBlur={onBlur}
                        onChange={onChangeText}
                 />
-                <InputLeftElement>
-                    <IconButton size='md'
-                                colorScheme='green'
-                                onClick={() => navigate('/menu')}>
-                        <MdMenu/>
-                    </IconButton>
-                </InputLeftElement>
             </InputGroup>
+            <Menu>
+                <Box position='fixed' bottom={5} left={5}>
+                    <MenuButton>
+                        <IconButton aria-label='menu' icon={<MdMenu/>} colorScheme='green'/>
+                    </MenuButton>
+                    <MenuList>
+                        <MenuItem onClick={() => navigate(routes.profile)}>Профиль</MenuItem>
+                        <MenuItem onClick={() => navigate(routes.orders)}>История</MenuItem>
+                        <MenuItem onClick={() => {}}>Настройки</MenuItem>
+                    </MenuList>
+                </Box>
+            </Menu>
+
             <Slide direction='bottom'
                    in={open}
                    style={{

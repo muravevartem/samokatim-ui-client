@@ -29,4 +29,6 @@ export const events = {
     error: 'error',
     searchFocus: 'search-focus',
     searchBlur: 'search-focus',
+    error403: 'error-403',
+    updatedUserName: 'updated-user-name'
 }
