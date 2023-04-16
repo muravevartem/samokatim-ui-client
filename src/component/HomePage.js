@@ -159,7 +159,6 @@ function ButtonMyLocation() {
 }
 
 function CompanyCard({company}) {
-    let navigate = useNavigate();
     return (
         <Card width='100%'>
             <VStack alignItems='start' w='100%' p={3} spacing={1}>

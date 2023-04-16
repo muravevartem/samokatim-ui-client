@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {Header} from "./util.js";
 import {
-    Alert, AlertIcon,
+    Alert,
+    AlertIcon,
     Avatar,
     Box,
     Button,
@@ -18,7 +19,6 @@ import {
 } from "@chakra-ui/react";
 import {MdDelete, MdDone, MdEdit} from "react-icons/md";
 import {useNavigate} from "react-router-dom";
-import {UserAvatar} from "./UserAvatar.js";
 import {userService} from "../service/UserService.js";
 import {AxiosError} from "axios";
 import validator from "validator/es";
@@ -55,7 +55,7 @@ export function ProfilePage() {
         <VStack w='100%' p={5}>
             <Header title='Профиль'/>
             <VStack divider={<Divider/>} maxW={768} w='100%'>
-                {(!user.firstName || !user.lastName) &&
+                {(!loading && (!user.firstName || !user.lastName)) &&
                     <Alert status='warning'>
                         <AlertIcon/>
                         Давайте познакомимся
