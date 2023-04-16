@@ -3,7 +3,7 @@ import {userService} from "./service/UserService.js";
 import {events, eventService} from "./service/EventService.js";
 
 let userApi = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: 'https://client.1304294-cu57808.tw1.ru',
     withCredentials: true,
 });
 

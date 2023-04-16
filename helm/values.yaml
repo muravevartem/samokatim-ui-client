@@ -46,7 +46,7 @@ ingress:
     kubernetes.io/ingress.class:
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: client.1304294-cu57808.tw1.ru
+    - host: 1304294-cu57808.tw1.ru
       paths:
         - path: /
           pathType: Prefix
