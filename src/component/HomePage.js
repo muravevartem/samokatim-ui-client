@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {
     Alert,
-    AlertIcon, Avatar,
+    AlertIcon,
     Box,
     Button,
     Card,
@@ -12,11 +12,14 @@ import {
     IconButton,
     Input,
     InputGroup,
-    InputLeftElement, InputRightElement, Menu, MenuButton, MenuItem, MenuList,
-    Slide,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuList,
+    Slide, Text,
     VStack
 } from "@chakra-ui/react";
-import {MapContainer, Marker, Popup, TileLayer, useMap} from "react-leaflet";
+import {MapContainer, Marker, TileLayer, Tooltip, useMap} from "react-leaflet";
 import {locations, locationService} from "../service/LocationService.js";
 import {errorService} from "../service/ErrorService.js";
 import {events, eventService} from "../service/EventService.js";
@@ -24,7 +27,7 @@ import {MdLocationOn, MdMenu} from "react-icons/md";
 import {useNavigate} from "react-router-dom";
 import {routes} from "../routers.js";
 import {userService} from "../service/UserService.js";
-import {UserAvatar} from "./UserAvatar.js";
+import L from 'leaflet'
 
 export function HomePage() {
     const [openSearch, setOpenSearch] = useState(false);
@@ -106,6 +109,12 @@ function LocationMarker({onError}) {
     map.on('zoom', event => localStorage.setItem('MyLastZoom', event.target.getZoom()))
     map.on('move', event => localStorage.setItem('MyLastCenter', JSON.stringify(event.target.getCenter())))
 
+
+    const myIcon = new L.Icon({
+        iconUrl: 'myLocation.png',
+        iconSize: [48,48],
+    });
+
     const toMyLocation = async () => {
         try {
             let location = await locationService.getMyLocation();
@@ -125,8 +134,10 @@ function LocationMarker({onError}) {
     }, [])
 
     return position === null ? null : (
-        <Marker position={position}>
-            <Popup>You are here</Popup>
+        <Marker position={position} icon={myIcon}>
+            <Tooltip direction="top" permanent offset={[0, -20]}>
+                <Text fontWeight='bold'>Вы здесь</Text>
+            </Tooltip>
         </Marker>
     )
 }
