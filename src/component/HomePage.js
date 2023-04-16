@@ -5,10 +5,9 @@ import {
     Box,
     Button,
     Card,
-    CardBody,
-    CardHeader,
     Container,
     Heading,
+    HStack,
     IconButton,
     Input,
     InputGroup,
@@ -16,7 +15,8 @@ import {
     MenuButton,
     MenuItem,
     MenuList,
-    Slide, Text,
+    Slide,
+    Text,
     VStack
 } from "@chakra-ui/react";
 import {MapContainer, Marker, TileLayer, Tooltip, useMap} from "react-leaflet";
@@ -28,6 +28,7 @@ import {useNavigate} from "react-router-dom";
 import {routes} from "../routers.js";
 import {userService} from "../service/UserService.js";
 import L from 'leaflet'
+import {companyService} from "../service/CompanyService.js";
 
 export function HomePage() {
     const [openSearch, setOpenSearch] = useState(false);
@@ -157,18 +158,19 @@ function ButtonMyLocation() {
     )
 }
 
-function CompanyCard() {
+function CompanyCard({company}) {
+    let navigate = useNavigate();
     return (
         <Card width='100%'>
-            <CardHeader>
-                <Heading size='md'>Помидорка</Heading>
-            </CardHeader>
-            <CardBody>
-
-            </CardBody>
-            <CardBody>
-                <Button>Выбрать</Button>
-            </CardBody>
+            <VStack alignItems='start' w='100%' p={3} spacing={1}>
+                <Heading size='sm'>{company.name}</Heading>
+                <Text>ИНН: {company.inn}</Text>
+                <Text>Телефон: {company.tel}</Text>
+                <Text>Email: {company.email}</Text>
+                <HStack w='100%' justifyContent='end'>
+                    <Button>Выбрать</Button>
+                </HStack>
+            </VStack>
         </Card>
     )
 }
@@ -176,11 +178,27 @@ function CompanyCard() {
 function SearchBar({onFocus, onBlur}) {
     const [text, setText] = useState('');
     const [open, setOpen] = useState(false);
+    const [companies, setCompanies] = useState([]);
+    const [loading, setLoading] = useState(false);
+
     let navigate = useNavigate();
+
+    async function searchCompanies() {
+        try {
+            setLoading(true);
+            const companyPage = await companyService.search(text, {size: 30, page: 0})
+            setCompanies(companyPage.content);
+        } catch (e) {
+
+        } finally {
+            setLoading(false);
+        }
+    }
 
     function onChangeText(event) {
         setText(event.target.value);
         setOpen(true);
+        searchCompanies();
     }
 
     return (
@@ -226,16 +244,7 @@ function SearchBar({onFocus, onBlur}) {
                             spacing={2}
                             overflowY='scroll'
                     >
-                        <CompanyCard/>
-                        <CompanyCard/>
-                        <CompanyCard/>
-                        <CompanyCard/>
-                        <CompanyCard/>
-                        <CompanyCard/>
-                        <CompanyCard/>
-                        <CompanyCard/>
-                        <CompanyCard/>
-                        <CompanyCard/>
+                        {companies.map(company => <CompanyCard key={company.id} company={company}/>)}
                     </VStack>
                     <Container>
                         <Button onClick={() => setOpen(false)}
