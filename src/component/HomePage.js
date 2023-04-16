@@ -29,6 +29,7 @@ import {routes} from "../routers.js";
 import {userService} from "../service/UserService.js";
 import L from 'leaflet'
 import {companyService} from "../service/CompanyService.js";
+import isEmpty from "validator/es/lib/isEmpty.js";
 
 export function HomePage() {
     const [openSearch, setOpenSearch] = useState(false);
@@ -174,15 +175,14 @@ function CompanyCard({company}) {
     )
 }
 
-function SearchBar({onFocus, onBlur}) {
-    const [text, setText] = useState('');
+function SearchBar() {
     const [open, setOpen] = useState(false);
     const [companies, setCompanies] = useState([]);
     const [loading, setLoading] = useState(false);
 
     let navigate = useNavigate();
 
-    async function searchCompanies() {
+    async function searchCompanies(text) {
         try {
             setLoading(true);
             const companyPage = await companyService.search(text, {size: 30, page: 0})
@@ -195,9 +195,17 @@ function SearchBar({onFocus, onBlur}) {
     }
 
     function onChangeText(event) {
-        setText(event.target.value);
-        setOpen(true);
-        searchCompanies();
+        let text = event.target.value;
+
+        if (isEmpty(text)) {
+            setOpen(false);
+        } else {
+            if (!open) {
+                setOpen(true);
+            }
+        }
+
+        searchCompanies(text);
     }
 
     return (
@@ -212,9 +220,6 @@ function SearchBar({onFocus, onBlur}) {
                        width='100%'
                        placeholder='Поиск...'
                        shadow='lg'
-                       value={text}
-                       onFocus={onFocus}
-                       onBlur={onBlur}
                        onChange={onChangeText}
                 />
             </InputGroup>
@@ -241,8 +246,13 @@ function SearchBar({onFocus, onBlur}) {
                     <VStack width='100%'
                             padding={4}
                             spacing={2}
-                            overflowY='scroll'
+                            overflowY='auto'
                     >
+                        {loading &&
+                            <HStack w='100%' justifyContent='center'>
+                                <Heading size='sm'>Загружаю...</Heading>
+                            </HStack>
+                        }
                         {companies.map(company => <CompanyCard key={company.id} company={company}/>)}
                     </VStack>
                     <Container>
