@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {
     Alert,
     AlertIcon,
@@ -30,14 +30,15 @@ import {userService} from "../service/UserService.js";
 import L from 'leaflet'
 import {companyService} from "../service/CompanyService.js";
 import isEmpty from "validator/es/lib/isEmpty.js";
+import {equipmentService} from "../service/EquipmentService.js";
 
 export function HomePage() {
-    const [openSearch, setOpenSearch] = useState(false);
     let navigate = useNavigate();
+
     useEffect(() => {
         if (!userService.authenticated())
             navigate(routes.login)
-    },[])
+    }, [])
 
     return (
         <VStack spacing={0} width='100%' minH={'100vh'}>
@@ -49,9 +50,11 @@ export function HomePage() {
 
 export function MapBox() {
     const [error, setError] = useState();
+
     let center = JSON.parse(localStorage.getItem('MyLastCenter'));
     let zoom = localStorage.getItem('MyLastZoom');
-    console.log(center)
+
+
     return (
         <Box w='100%' h='100vh' position='fixed' zIndex={1} top={0}>
             {error &&
@@ -73,6 +76,7 @@ export function MapBox() {
                 />
                 <ZoomBox/>
                 <LocationMarker onError={setError}/>
+                <EquipmentLocationMarkers/>
             </MapContainer>
         </Box>
     )
@@ -80,6 +84,14 @@ export function MapBox() {
 
 function ZoomBox() {
     const map = useMap();
+
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => mounted.current = false;
+    }, [])
+
     return (
         <VStack pos='fixed'
                 right={2}
@@ -88,15 +100,25 @@ function ZoomBox() {
             <Button colorScheme='gray'
                     color='green'
                     rounded='lg'
-                    onDoubleClick={() => {}}
-                    onClick={() => map.setZoom(map.getZoom() + 1)}>
+                    onDoubleClick={() => {
+                    }}
+                    onClick={() => {
+                        if (mounted.current) {
+                            map.setZoom(map.getZoom() + 1)
+                        }
+                    }}>
                 +
             </Button>
             <Button colorScheme='gray'
                     color='green'
                     rounded='lg'
-                    onDoubleClick={() => {}}
-                    onClick={() => map.setZoom(map.getZoom() - 1)}>
+                    onDoubleClick={() => {
+                    }}
+                    onClick={() => {
+                        if (mounted.current) {
+                            map.setZoom(map.getZoom() - 1)
+                        }
+                    }}>
                 -
             </Button>
         </VStack>
@@ -108,13 +130,11 @@ function LocationMarker({onError}) {
     const [position, setPosition] = useState(null)
     const map = useMap();
 
-    map.on('zoom', event => localStorage.setItem('MyLastZoom', event.target.getZoom()))
-    map.on('move', event => localStorage.setItem('MyLastCenter', JSON.stringify(event.target.getCenter())))
-
+    const mounted = useRef(false);
 
     const myIcon = new L.Icon({
         iconUrl: 'myLocation.png',
-        iconSize: [48,48],
+        iconSize: [48, 48],
     });
 
     const toMyLocation = async () => {
@@ -132,7 +152,24 @@ function LocationMarker({onError}) {
     }
 
     useEffect(() => {
-        eventService.subscribe(events.myLocation, () => toMyLocation())
+        mounted.current = true;
+        map.on('zoom', event => {
+            if (mounted.current) {
+                localStorage.setItem('MyLastZoom', event.target.getZoom())
+            }
+        })
+        map.on('move', event => {
+            if (mounted.current) {
+                localStorage.setItem('MyLastCenter', JSON.stringify(event.target.getCenter()))
+            }
+        })
+        eventService.subscribe(events.myLocation, () => {
+                if (mounted) {
+                    toMyLocation()
+                }
+            }
+        )
+        return () => mounted.current = false;
     }, [])
 
     return position === null ? null : (
@@ -141,6 +178,60 @@ function LocationMarker({onError}) {
                 <Text fontWeight='bold'>Вы здесь</Text>
             </Tooltip>
         </Marker>
+    )
+}
+
+function EquipmentLocationMarkers() {
+    const [points, setPoints] = useState([]);
+    const mounted = useRef(false);
+
+    const myIcon = new L.Icon({
+        iconUrl: 'myLocation.png',
+        iconSize: [48, 48],
+    });
+
+    const map = useMap();
+
+    function toPoints(map) {
+        let bounds = map.getBounds();
+        let northEast = bounds.getNorthEast();
+        let southWest = bounds.getSouthWest();
+        return {
+            northEast: northEast,
+            southWest: southWest
+        }
+    }
+
+
+    useEffect(() => {
+        mounted.current = true;
+        if (mounted.current) {
+            map.on('moveend', event => {
+                if (mounted.current) {
+                    equipmentService.getPoints(toPoints(map))
+                }
+
+            })
+            eventService.subscribe(events.newEquipmentLocations, points => {
+                if (mounted.current) {
+                    setPoints(points);
+                }
+            });
+        }
+        return () => {
+            mounted.current = false;
+        }
+    }, [])
+
+
+    return (
+        <>
+            {points.map(point => (
+                <Marker position={[point.lat, point.lng]} icon={myIcon}>
+
+                </Marker>
+            ))}
+        </>
     )
 }
 
@@ -231,7 +322,8 @@ function SearchBar() {
                     <MenuList>
                         <MenuItem onClick={() => navigate(routes.profile)}>Профиль</MenuItem>
                         <MenuItem onClick={() => navigate(routes.orders)}>История</MenuItem>
-                        <MenuItem onClick={() => {}}>Настройки</MenuItem>
+                        <MenuItem onClick={() => {
+                        }}>Настройки</MenuItem>
                     </MenuList>
                 </Box>
             </Menu>

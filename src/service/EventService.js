@@ -30,5 +30,7 @@ export const events = {
     searchFocus: 'search-focus',
     searchBlur: 'search-focus',
     error403: 'error-403',
-    updatedUserName: 'updated-user-name'
+    updatedUserName: 'updated-user-name',
+    moveMap: 'move-map',
+    newEquipmentLocations: 'new-equipment-locations',
 }

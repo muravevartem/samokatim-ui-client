@@ -40,3 +40,12 @@ handbookApi.interceptors.response.use(onFulfilledResponse, onRejectedResponse)
 
 export const $handbook_api = handbookApi;
 
+let monitorApi = axios.create({
+    baseURL: 'https://monitor.1304294-cu57808.tw1.ru',
+    withCredentials: true,
+});
+
+monitorApi.interceptors.request.use(onFulfilledRequest, onRejectedRequest)
+monitorApi.interceptors.response.use(onFulfilledResponse, onRejectedResponse)
+
+export const $monitor_api = monitorApi;
