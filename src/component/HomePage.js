@@ -286,14 +286,18 @@ function CompanyCard({company}) {
 }
 
 function EquipmentCard() {
-    const [selectedEquipment, setSelectedEquipment] = useState(null);
+    const [selectedEquipment, setSelectedEquipment] = useState({});
     const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
 
     async function loadEquipment(equipmentId) {
         try {
-            setLoading(true)
-            let equipment = await equipmentService.getOne(equipmentId);
-            setSelectedEquipment(equipment);
+            if (!loading) {
+                setLoading(true)
+                setOpen(true)
+                let equipment = await equipmentService.getOne(equipmentId);
+                setSelectedEquipment(equipment);
+            }
         } catch (e) {
             setSelectedEquipment(null);
         } finally {
@@ -309,24 +313,22 @@ function EquipmentCard() {
     return (
         <Slide
             direction='bottom'
-            in={selectedEquipment !== null}
+            in={open}
             style={{
                 zIndex: 15
             }}>
 
             <Skeleton isLoaded={!loading}>
-                {selectedEquipment &&
-                    <VStack bgColor='white' minH={200} alignItems='start' p={5} w='100%' spacing={4}>
-                        <HStack w='100%' justifyContent='space-between'>
-                            <VStack alignItems='start' spacing={0}>
-                                <Heading size='lg'>{selectedEquipment.name}</Heading>
-                                <Text>{selectedEquipment.owner.name}</Text>
-                            </VStack>
-                            <CloseButton onClick={() => setSelectedEquipment(null)}/>
-                        </HStack>
-                        <Button colorScheme='green' w='100%' p={3}>Арендовать</Button>
-                    </VStack>
-                }
+                <VStack bgColor='white' minH={200} alignItems='start' p={5} w='100%' spacing={4}>
+                    <HStack w='100%' justifyContent='space-between'>
+                        <VStack alignItems='start' spacing={0}>
+                            <Heading size='lg'>{selectedEquipment.name}</Heading>
+                            <Text>{selectedEquipment?.owner?.name}</Text>
+                        </VStack>
+                        <CloseButton onClick={() => setOpen(false)}/>
+                    </HStack>
+                    <Button colorScheme='green' w='100%' p={3}>Арендовать</Button>
+                </VStack>
             </Skeleton>
 
 
