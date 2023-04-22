@@ -1,10 +1,10 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {
     Alert,
     AlertIcon,
     Box,
     Button,
-    Card,
+    Card, CloseButton,
     Container,
     Heading,
     HStack,
@@ -14,7 +14,7 @@ import {
     Menu,
     MenuButton,
     MenuItem,
-    MenuList,
+    MenuList, Skeleton,
     Slide,
     Text,
     VStack
@@ -183,12 +183,8 @@ function LocationMarker({onError}) {
 
 function EquipmentLocationMarkers() {
     const [points, setPoints] = useState([]);
+    const [selectedPoint, setSelectedPoint] = useState();
     const mounted = useRef(false);
-
-    const myIcon = new L.Icon({
-        iconUrl: 'myLocation.png',
-        iconSize: [48, 48],
-    });
 
     const map = useMap();
 
@@ -227,11 +223,34 @@ function EquipmentLocationMarkers() {
     return (
         <>
             {points.map(point => (
-                <Marker position={[point.lat, point.lng]} icon={myIcon}>
-
-                </Marker>
+                <EquipmentMarker point={point}/>
             ))}
         </>
+    )
+}
+
+function EquipmentMarker({point}) {
+    const [selected, setSelected] = useState(false);
+
+    const myIcon = new L.Icon({
+        iconUrl: 'equipmentLoc.png',
+        iconSize: [24, 24],
+    });
+
+    const eventHandlers = useMemo(
+        () => ({
+            click() {
+                console.log(`selected ${point.equipmentId}`)
+                eventService.raiseWithData(events.selectedEquipment, {equipmentId: point.equipmentId});
+            },
+        }),
+        [],
+    )
+
+    return (
+        <Marker position={[point.lat, point.lng]} icon={myIcon} eventHandlers={eventHandlers}>
+
+        </Marker>
     )
 }
 
@@ -263,6 +282,55 @@ function CompanyCard({company}) {
                 </HStack>
             </VStack>
         </Card>
+    )
+}
+
+function EquipmentCard() {
+    const [selectedEquipment, setSelectedEquipment] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    async function loadEquipment(equipmentId) {
+        try {
+            setLoading(true)
+            let equipment = await equipmentService.getOne(equipmentId);
+            setSelectedEquipment(equipment);
+        } catch (e) {
+            setSelectedEquipment(null);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        eventService.subscribe(events.selectedEquipment, ({equipmentId}) => loadEquipment(equipmentId));
+    }, [])
+
+
+    return (
+        <Slide
+            direction='bottom'
+            in={selectedEquipment !== null}
+            style={{
+                zIndex: 15
+            }}>
+
+            <Skeleton isLoaded={!loading}>
+                {selectedEquipment &&
+                    <VStack bgColor='white' minH={200} alignItems='start' p={5} w='100%' spacing={4}>
+                        <HStack w='100%' justifyContent='space-between'>
+                            <VStack alignItems='start' spacing={0}>
+                                <Heading size='lg'>{selectedEquipment.name}</Heading>
+                                <Text>{selectedEquipment.owner.name}</Text>
+                            </VStack>
+                            <CloseButton onClick={() => setSelectedEquipment(null)}/>
+                        </HStack>
+                        <Button colorScheme='green' w='100%' p={3}>Арендовать</Button>
+                    </VStack>
+                }
+            </Skeleton>
+
+
+        </Slide>
     )
 }
 
@@ -327,7 +395,7 @@ function SearchBar() {
                     </MenuList>
                 </Box>
             </Menu>
-
+            <EquipmentCard/>
             <Slide direction='bottom'
                    in={open}
                    style={{
