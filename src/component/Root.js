@@ -16,6 +16,8 @@ export function Root() {
         document.title = 'Самокатим'
         eventService.subscribe(events.error403, () => navigate(routes.login))
     },[])
+
+
     return (
         <VStack>
             <Outlet/>

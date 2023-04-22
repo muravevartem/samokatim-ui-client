@@ -20,7 +20,7 @@ export class EquipmentService {
             southWest: data.southWest
         });
         let points = response.data;
-        eventService.raiseWithData(events.newEquipmentLocations, points)
+        return points;
     }
 
     async getOne(id) {

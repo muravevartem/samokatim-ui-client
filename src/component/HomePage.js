@@ -197,18 +197,25 @@ function EquipmentLocationMarkers() {
         }
     }
 
+    async function loadPoints() {
+        try {
+            if (!loading){
+                setLoading(true);
+                let points = await equipmentService.getPoints(toPoints(map));
+                setPoints(points)
+            }
+        } catch (e) {
+
+        } finally {
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
         map.on('moveend', event => {
-            if (!loading){
-                setLoading(true);
-                equipmentService.getPoints(toPoints(map))
-            }
+            loadPoints()
         })
-        eventService.subscribe(events.newEquipmentLocations, points => {
-            setPoints(points);
-            setLoading(false)
-        });
+        loadPoints();
     }, [])
 
 
