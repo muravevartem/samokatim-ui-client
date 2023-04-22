@@ -7,7 +7,7 @@ import {
     Card, CloseButton,
     Container,
     Heading,
-    HStack,
+    HStack, Icon,
     IconButton,
     Input,
     InputGroup,
@@ -183,8 +183,7 @@ function LocationMarker({onError}) {
 
 function EquipmentLocationMarkers() {
     const [points, setPoints] = useState([]);
-    const [selectedPoint, setSelectedPoint] = useState();
-    const mounted = useRef(false);
+    const [loading, setLoading] = useState(false);
 
     const map = useMap();
 
@@ -200,37 +199,29 @@ function EquipmentLocationMarkers() {
 
 
     useEffect(() => {
-        mounted.current = true;
-        if (mounted.current) {
-            map.on('moveend', event => {
-                if (mounted.current) {
-                    equipmentService.getPoints(toPoints(map))
-                }
-
-            })
-            eventService.subscribe(events.newEquipmentLocations, points => {
-                if (mounted.current) {
-                    setPoints(points);
-                }
-            });
-        }
-        return () => {
-            mounted.current = false;
-        }
+        map.on('moveend', event => {
+            if (!loading){
+                setLoading(true);
+                equipmentService.getPoints(toPoints(map))
+            }
+        })
+        eventService.subscribe(events.newEquipmentLocations, points => {
+            setPoints(points);
+            setLoading(false)
+        });
     }, [])
 
 
     return (
         <>
             {points.map(point => (
-                <EquipmentMarker point={point}/>
+                <EquipmentMarker point={point} key={point.equipmentId}/>
             ))}
         </>
     )
 }
 
 function EquipmentMarker({point}) {
-    const [selected, setSelected] = useState(false);
 
     const myIcon = new L.Icon({
         iconUrl: 'equipmentLoc.png',
@@ -258,6 +249,7 @@ function ButtonMyLocation() {
     return (
         <IconButton
             position='fixed'
+            isRound
             right={5}
             bottom={5}
             onClick={() => eventService.raise(events.myLocation)}
@@ -345,9 +337,11 @@ function SearchBar() {
 
     async function searchCompanies(text) {
         try {
-            setLoading(true);
-            const companyPage = await companyService.search(text, {size: 30, page: 0})
-            setCompanies(companyPage.content);
+            if (!loading) {
+                setLoading(true);
+                const companyPage = await companyService.search(text, {size: 30, page: 0})
+                setCompanies(companyPage.content);
+            }
         } catch (e) {
 
         } finally {
@@ -386,14 +380,13 @@ function SearchBar() {
             </InputGroup>
             <Menu>
                 <Box position='fixed' bottom={5} left={5}>
-                    <MenuButton>
-                        <IconButton aria-label='menu' icon={<MdMenu/>} colorScheme='green'/>
+                    <MenuButton as={Button} leftIcon={<MdMenu/>}>
+                        Меню
                     </MenuButton>
                     <MenuList>
                         <MenuItem onClick={() => navigate(routes.profile)}>Профиль</MenuItem>
                         <MenuItem onClick={() => navigate(routes.orders)}>История</MenuItem>
-                        <MenuItem onClick={() => {
-                        }}>Настройки</MenuItem>
+                        <MenuItem onClick={() => {}}>Настройки</MenuItem>
                     </MenuList>
                 </Box>
             </Menu>
