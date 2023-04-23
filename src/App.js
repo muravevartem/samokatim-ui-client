@@ -5,9 +5,6 @@ import {router} from "./routers";
 import {useEffect} from "react";
 
 function App() {
-    useEffect(() => {
-        console.log('tttt')
-    },[])
     return (
         <Box w='100%' minH='100vh'>
             <RouterProvider router={router}/>

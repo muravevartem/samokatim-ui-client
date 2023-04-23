@@ -1,10 +1,10 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {
     Alert,
-    AlertIcon,
+    AlertIcon, Badge,
     Box,
     Button,
-    Card, CardBody, CardHeader, CloseButton,
+    Card, CardBody, CardFooter, CardHeader, CloseButton,
     Container,
     Heading,
     HStack, Icon,
@@ -426,6 +426,7 @@ function ActiveRents() {
 
     const [loading, setLoading] = useState(false);
     const [rents, setRents] = useState([]);
+    const [open, setOpen] = useState(false);
 
     async function loadRents() {
         try {
@@ -444,22 +445,43 @@ function ActiveRents() {
     }, [])
 
     return (
+
+
         <Skeleton isLoaded={!loading}>
-            <Menu>
-                <MenuButton as={Button} leftIcon={<MdBikeScooter/>}>
-                    {rents.length}
-                </MenuButton>
-                <MenuList>
-                    {rents.map(rent => (
-                        <MenuItem key={rent.id}>
-                            <HStack>
-                                <Tag colorScheme='yellow'>Активно</Tag>
-                                <Text>{moment(rent.startTime).fromNow()}</Text>
-                            </HStack>
-                        </MenuItem>
-                    ))}
-                </MenuList>
-            </Menu>
+            <Button leftIcon={<MdBikeScooter/>} onClick={() => setOpen(true)} zIndex={10}>
+                {rents.length}
+            </Button>
+            <Slide direction='bottom'
+                   in={open}
+                   style={{
+                       zIndex: 10
+                   }}>
+                <VStack bgColor='white' alignItems='start' w='100%' p={2}>
+                    <HStack justifyContent='end' w='100%'>
+                        <CloseButton onClick={()=>setOpen(false)}/>
+                    </HStack>
+                    <VStack spacing={4} w='100%'>
+                        {rents.map(rent => (
+                            <Card key={rent.id} w='100%'>
+                                <CardHeader>
+                                    <Heading size='lg'>Аренда #{rent.id} <Badge colorScheme='yellow'>Активно</Badge></Heading>
+                                </CardHeader>
+                                <CardBody>
+                                    <VStack spacing={3} alignItems='start'>
+                                        <Tag>{moment(rent.startTime).format('LLL')}</Tag>
+                                    </VStack>
+                                </CardBody>
+                                <CardFooter>
+                                    <Button size='sm' colorScheme='yellow'>
+                                        Остановить
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                    </VStack>
+                </VStack>
+            </Slide>
+
         </Skeleton>
 
     )
