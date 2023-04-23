@@ -448,7 +448,9 @@ function ActiveRents() {
 
 
         <Skeleton isLoaded={!loading}>
-            <Button leftIcon={<MdBikeScooter/>} onClick={() => setOpen(true)} zIndex={10}>
+            <Button leftIcon={<MdBikeScooter/>}
+                    onClick={() => setOpen(true)}
+                    zIndex={10} colorScheme={rents.length > 0 ? 'yellow' : 'lightgray'}>
                 {rents.length}
             </Button>
             <Slide direction='bottom'
