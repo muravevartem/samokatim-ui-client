@@ -4,7 +4,7 @@ import {
     AlertIcon,
     Box,
     Button,
-    Card, CloseButton,
+    Card, CardBody, CardHeader, CloseButton,
     Container,
     Heading,
     HStack, Icon,
@@ -14,8 +14,8 @@ import {
     Menu,
     MenuButton,
     MenuItem,
-    MenuList, Skeleton,
-    Slide,
+    MenuList, Radio, RadioGroup, SimpleGrid, Skeleton,
+    Slide, Stack,
     Text,
     VStack
 } from "@chakra-ui/react";
@@ -31,6 +31,7 @@ import L from 'leaflet'
 import {companyService} from "../service/CompanyService.js";
 import isEmpty from "validator/es/lib/isEmpty.js";
 import {equipmentService} from "../service/EquipmentService.js";
+import {paymentService} from "../service/PaymentService";
 
 export function HomePage() {
     let navigate = useNavigate();
@@ -286,6 +287,7 @@ function CompanyCard({company}) {
 
 function EquipmentCard() {
     const [selectedEquipment, setSelectedEquipment] = useState({});
+    const [selectedRate, setSelectedRate] = useState();
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
@@ -308,6 +310,9 @@ function EquipmentCard() {
         eventService.subscribe(events.selectedEquipment, ({equipmentId}) => loadEquipment(equipmentId));
     }, [])
 
+    useEffect(()=>{
+        console.log(selectedRate);
+    },[selectedRate])
 
     return (
         <Slide
@@ -326,12 +331,73 @@ function EquipmentCard() {
                         </VStack>
                         <CloseButton onClick={() => setOpen(false)}/>
                     </HStack>
+                    {selectedEquipment &&
+                        <RateList equipment={selectedEquipment} value={selectedRate} setValue={setSelectedRate}/>
+                    }
                     <Button colorScheme='green' w='100%' p={3}>Арендовать</Button>
                 </VStack>
             </Skeleton>
 
 
         </Slide>
+    )
+}
+
+function RateList({equipment, value, setValue}) {
+    const [rate, setRate] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState();
+
+    async function loadRate() {
+        let orgId = equipment?.owner?.id;
+        if (orgId) {
+            try {
+                setLoading(true);
+                let rate = await paymentService.getRatesForOrganization(orgId);
+                setRate(rate);
+            } catch (e) {
+                let errorObj = errorService.beautify(e);
+                setError(errorObj);
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    useEffect(() => {
+        loadRate();
+    }, [])
+
+    if (error) {
+        return <Alert status='error'>
+            <AlertIcon/>{error.message}
+        </Alert>
+    }
+
+    return (
+        <Skeleton isLoaded={!loading} w='100%'>
+            <SimpleGrid spacing={4} templateColumns='repeat(auto-fill, min(200px))'>
+                <RateElement key={rate.id} rate={rate}/>
+            </SimpleGrid>
+        </Skeleton>
+    )
+}
+
+function RateElement({rate}) {
+    return (
+        <Card>
+            <CardHeader>
+                <Heading size='md'>{rate.name}</Heading>
+            </CardHeader>
+            <CardBody>
+                <VStack w='100%' alignItems='start'>
+                    <Heading size='lg'>
+                        {rate.price}₽/Мин
+                    </Heading>
+                </VStack>
+            </CardBody>
+        </Card>
+
     )
 }
 
