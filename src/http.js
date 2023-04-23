@@ -31,7 +31,8 @@ userApi.interceptors.response.use(onFulfilledResponse, onRejectedResponse)
 export const $user_api = userApi;
 
 let handbookApi = axios.create({
-    baseURL: 'https://handbook.1304294-cu57808.tw1.ru',
+    // baseURL: 'https://handbook.1304294-cu57808.tw1.ru',
+    baseURL: 'http://localhost:8080',
     withCredentials: true,
 });
 

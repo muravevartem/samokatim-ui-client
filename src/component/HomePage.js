@@ -15,7 +15,7 @@ import {
     MenuButton,
     MenuItem,
     MenuList, Radio, RadioGroup, SimpleGrid, Skeleton,
-    Slide, Stack,
+    Slide, Stack, Tag,
     Text,
     VStack
 } from "@chakra-ui/react";
@@ -23,7 +23,7 @@ import {MapContainer, Marker, TileLayer, Tooltip, useMap} from "react-leaflet";
 import {locations, locationService} from "../service/LocationService.js";
 import {errorService} from "../service/ErrorService.js";
 import {events, eventService} from "../service/EventService.js";
-import {MdLocationOn, MdMenu} from "react-icons/md";
+import {MdBikeScooter, MdCarRental, MdKey, MdLocationOn, MdMenu} from "react-icons/md";
 import {useNavigate} from "react-router-dom";
 import {routes} from "../routers.js";
 import {userService} from "../service/UserService.js";
@@ -32,6 +32,7 @@ import {companyService} from "../service/CompanyService.js";
 import isEmpty from "validator/es/lib/isEmpty.js";
 import {equipmentService} from "../service/EquipmentService.js";
 import {paymentService} from "../service/PaymentService";
+import moment from "moment";
 
 export function HomePage() {
     let navigate = useNavigate();
@@ -43,7 +44,7 @@ export function HomePage() {
 
     return (
         <VStack spacing={0} width='100%' minH={'100vh'}>
-            <SearchBar/>
+            <MainView/>
             <MapBox/>
         </VStack>
     )
@@ -200,7 +201,7 @@ function EquipmentLocationMarkers() {
 
     async function loadPoints() {
         try {
-            if (!loading){
+            if (!loading) {
                 setLoading(true);
                 let points = await equipmentService.getPoints(toPoints(map));
                 setPoints(points)
@@ -290,6 +291,7 @@ function EquipmentCard() {
     const [selectedRate, setSelectedRate] = useState();
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [error, setError] = useState();
 
     async function loadEquipment(equipmentId) {
         try {
@@ -306,13 +308,24 @@ function EquipmentCard() {
         }
     }
 
+    async function startRent() {
+        if (!loading) {
+            try {
+                setLoading(true)
+                await paymentService.startRent({equipmentId: selectedEquipment.id})
+                setOpen(false)
+            } catch (e) {
+                setError(errorService.beautify(e));
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
     useEffect(() => {
         eventService.subscribe(events.selectedEquipment, ({equipmentId}) => loadEquipment(equipmentId));
     }, [])
 
-    useEffect(()=>{
-        console.log(selectedRate);
-    },[selectedRate])
 
     return (
         <Slide
@@ -321,6 +334,10 @@ function EquipmentCard() {
             style={{
                 zIndex: 15
             }}>
+
+            {error &&
+                <Alert status='error'><AlertIcon/>{error.message}</Alert>
+            }
 
             <Skeleton isLoaded={!loading}>
                 <VStack bgColor='white' minH={200} alignItems='start' p={5} w='100%' spacing={4}>
@@ -332,9 +349,15 @@ function EquipmentCard() {
                         <CloseButton onClick={() => setOpen(false)}/>
                     </HStack>
                     {selectedEquipment &&
-                        <RateList equipment={selectedEquipment} value={selectedRate} setValue={setSelectedRate}/>
+                        <RateBlock equipment={selectedEquipment} value={selectedRate} setValue={setSelectedRate}/>
                     }
-                    <Button colorScheme='green' w='100%' p={3}>Арендовать</Button>
+                    <Button colorScheme='green'
+                            w='100%'
+                            p={3}
+                            disabled={loading}
+                            onClick={startRent}>
+                        Арендовать
+                    </Button>
                 </VStack>
             </Skeleton>
 
@@ -343,7 +366,7 @@ function EquipmentCard() {
     )
 }
 
-function RateList({equipment, value, setValue}) {
+function RateBlock({equipment}) {
     const [rate, setRate] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
@@ -376,9 +399,7 @@ function RateList({equipment, value, setValue}) {
 
     return (
         <Skeleton isLoaded={!loading} w='100%'>
-            <SimpleGrid spacing={4} templateColumns='repeat(auto-fill, min(200px))'>
-                <RateElement key={rate.id} rate={rate}/>
-            </SimpleGrid>
+            <RateElement key={rate.id} rate={rate}/>
         </Skeleton>
     )
 }
@@ -401,7 +422,50 @@ function RateElement({rate}) {
     )
 }
 
-function SearchBar() {
+function ActiveRents() {
+
+    const [loading, setLoading] = useState(false);
+    const [rents, setRents] = useState([]);
+
+    async function loadRents() {
+        try {
+            setLoading(true);
+            let rents = await paymentService.getMyActiveRent();
+            setRents(rents);
+        } catch (e) {
+
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadRents()
+    }, [])
+
+    return (
+        <Skeleton isLoaded={!loading}>
+            <Menu>
+                <MenuButton as={Button} leftIcon={<MdBikeScooter/>}>
+                    {rents.length}
+                </MenuButton>
+                <MenuList>
+                    {rents.map(rent => (
+                        <MenuItem key={rent.id}>
+                            <HStack>
+                                <Tag colorScheme='yellow'>Активно</Tag>
+                                <Text>{moment(rent.startTime).fromNow()}</Text>
+                            </HStack>
+                        </MenuItem>
+                    ))}
+                </MenuList>
+            </Menu>
+        </Skeleton>
+
+    )
+}
+
+function MainView() {
     const [open, setOpen] = useState(false);
     const [companies, setCompanies] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -451,18 +515,24 @@ function SearchBar() {
                        onChange={onChangeText}
                 />
             </InputGroup>
-            <Menu>
-                <Box position='fixed' bottom={5} left={5}>
-                    <MenuButton as={Button} leftIcon={<MdMenu/>}>
-                        Меню
-                    </MenuButton>
-                    <MenuList>
-                        <MenuItem onClick={() => navigate(routes.profile)}>Профиль</MenuItem>
-                        <MenuItem onClick={() => navigate(routes.orders)}>История</MenuItem>
-                        <MenuItem onClick={() => {}}>Настройки</MenuItem>
-                    </MenuList>
-                </Box>
-            </Menu>
+            <Box position='fixed' bottom={5}>
+                <HStack w='100%' justifyContent='start'>
+                    <Menu>
+                        <MenuButton as={Button} leftIcon={<MdMenu/>}>
+                            Меню
+                        </MenuButton>
+                        <MenuList>
+                            <MenuItem onClick={() => navigate(routes.profile)}>Профиль</MenuItem>
+                            <MenuItem onClick={() => navigate(routes.orders)}>История</MenuItem>
+                            <MenuItem onClick={() => {
+                            }}>Настройки</MenuItem>
+                        </MenuList>
+                    </Menu>
+                    <ActiveRents/>
+                </HStack>
+            </Box>
+
+
             <EquipmentCard/>
             <Slide direction='bottom'
                    in={open}
