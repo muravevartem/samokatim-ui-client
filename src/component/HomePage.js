@@ -33,6 +33,7 @@ import isEmpty from "validator/es/lib/isEmpty.js";
 import {equipmentService} from "../service/EquipmentService.js";
 import {paymentService} from "../service/PaymentService";
 import moment from "moment";
+import {FOR_RENT_EQUIPMENT_ICON, MY_LOCATION_ICON} from "./Icons";
 
 export function HomePage() {
     let navigate = useNavigate();
@@ -134,11 +135,6 @@ function LocationMarker({onError}) {
 
     const mounted = useRef(false);
 
-    const myIcon = new L.Icon({
-        iconUrl: 'myLocation.png',
-        iconSize: [48, 48],
-    });
-
     const toMyLocation = async () => {
         try {
             let location = await locationService.getMyLocation();
@@ -175,8 +171,8 @@ function LocationMarker({onError}) {
     }, [])
 
     return position === null ? null : (
-        <Marker position={position} icon={myIcon}>
-            <Tooltip direction="top" permanent offset={[0, -20]}>
+        <Marker position={position} icon={MY_LOCATION_ICON}>
+            <Tooltip direction="top" permanent offset={[0, -10]}>
                 <Text fontWeight='bold'>Вы здесь</Text>
             </Tooltip>
         </Marker>
@@ -232,10 +228,7 @@ function EquipmentLocationMarkers() {
 
 function EquipmentMarker({point}) {
 
-    const myIcon = new L.Icon({
-        iconUrl: 'equipmentLoc.png',
-        iconSize: [24, 24],
-    });
+
 
     const eventHandlers = useMemo(
         () => ({
@@ -248,7 +241,7 @@ function EquipmentMarker({point}) {
     )
 
     return (
-        <Marker position={[point.lat, point.lng]} icon={myIcon} eventHandlers={eventHandlers}>
+        <Marker position={[point.lat, point.lng]} icon={FOR_RENT_EQUIPMENT_ICON} eventHandlers={eventHandlers}>
 
         </Marker>
     )
