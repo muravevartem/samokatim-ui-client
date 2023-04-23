@@ -18,6 +18,11 @@ class PaymentService {
         });
         return response.data;
     }
+
+    async stopRent(rent) {
+        let response = await $handbook_api.put(`/api/v1/rents/${rent.id}/complete`);
+        return response.data;
+    }
 }
 
 export const paymentService = new PaymentService();

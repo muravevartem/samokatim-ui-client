@@ -293,6 +293,10 @@ function EquipmentCard() {
     const [open, setOpen] = useState(false);
     const [error, setError] = useState();
 
+    useEffect(() => {
+        setError(null);
+    },[open])
+
     async function loadEquipment(equipmentId) {
         try {
             if (!loading) {
@@ -312,8 +316,9 @@ function EquipmentCard() {
         if (!loading) {
             try {
                 setLoading(true)
-                await paymentService.startRent({equipmentId: selectedEquipment.id})
-                setOpen(false)
+                await paymentService.startRent({equipmentId: selectedEquipment.id});
+                eventService.raise(events.startRent);
+                setOpen(false);
             } catch (e) {
                 setError(errorService.beautify(e));
             } finally {
@@ -349,7 +354,7 @@ function EquipmentCard() {
                         <CloseButton onClick={() => setOpen(false)}/>
                     </HStack>
                     {selectedEquipment &&
-                        <RateBlock equipment={selectedEquipment} value={selectedRate} setValue={setSelectedRate}/>
+                        <RateView equipment={selectedEquipment} value={selectedRate} setValue={setSelectedRate}/>
                     }
                     <Button colorScheme='green'
                             w='100%'
@@ -366,7 +371,7 @@ function EquipmentCard() {
     )
 }
 
-function RateBlock({equipment}) {
+function RateView({equipment}) {
     const [rate, setRate] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
@@ -442,6 +447,8 @@ function ActiveRents() {
 
     useEffect(() => {
         loadRents()
+        eventService.subscribe(events.startRent, () => loadRents());
+        eventService.subscribe(events.stopRent, () => loadRents());
     }, [])
 
     return (
@@ -450,7 +457,7 @@ function ActiveRents() {
         <Skeleton isLoaded={!loading}>
             <Button leftIcon={<MdBikeScooter/>}
                     onClick={() => setOpen(true)}
-                    zIndex={10} colorScheme={rents.length > 0 ? 'yellow' : 'lightgray'}>
+                    zIndex={10} colorScheme={rents.length > 0 ? 'yellow' : 'gray'}>
                 {rents.length}
             </Button>
             <Slide direction='bottom'
@@ -463,22 +470,11 @@ function ActiveRents() {
                         <CloseButton onClick={()=>setOpen(false)}/>
                     </HStack>
                     <VStack spacing={4} w='100%'>
+                        {rents.length === 0 &&
+                            <Text>Пусто</Text>
+                        }
                         {rents.map(rent => (
-                            <Card key={rent.id} w='100%'>
-                                <CardHeader>
-                                    <Heading size='lg'>Аренда #{rent.id} <Badge colorScheme='yellow'>Активно</Badge></Heading>
-                                </CardHeader>
-                                <CardBody>
-                                    <VStack spacing={3} alignItems='start'>
-                                        <Tag>{moment(rent.startTime).format('LLL')}</Tag>
-                                    </VStack>
-                                </CardBody>
-                                <CardFooter>
-                                    <Button size='sm' colorScheme='yellow'>
-                                        Остановить
-                                    </Button>
-                                </CardFooter>
-                            </Card>
+                           <RentView rent={rent} key={rent.id}/>
                         ))}
                     </VStack>
                 </VStack>
@@ -486,6 +482,46 @@ function ActiveRents() {
 
         </Skeleton>
 
+    )
+}
+
+function RentView({rent}) {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState();
+
+    async function stopRent() {
+        try {
+            setLoading(true);
+            let stopedRent = await paymentService.stopRent(rent);
+            eventService.raiseWithData(events.stopRent, stopedRent);
+        } catch (e) {
+            setError(errorService.beautify(e));
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <Card key={rent.id} w='100%'>
+            {error &&
+                <Alert status='error'>{error.message}</Alert>
+            }
+            <CardHeader>
+                <Heading size='lg'>Аренда #{rent.id} <Badge colorScheme='yellow'>Активно</Badge></Heading>
+            </CardHeader>
+            <CardBody>
+                <VStack spacing={3} alignItems='start'>
+                    <Tag>{moment(rent.startTime).format('LLL')}</Tag>
+                </VStack>
+            </CardBody>
+            <CardFooter>
+                <Skeleton isLoaded={!loading}>
+                    <Button size='sm' colorScheme='yellow' onClick={stopRent}>
+                        Остановить
+                    </Button>
+                </Skeleton>
+            </CardFooter>
+        </Card>
     )
 }
 

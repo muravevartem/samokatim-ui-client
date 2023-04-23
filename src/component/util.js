@@ -23,3 +23,9 @@ export function beautifulRelativeDate(date) {
     let mDate = moment(date);
     return mDate.format('LLL')
 }
+
+export function NotContent() {
+    return (
+        <></>
+    )
+}

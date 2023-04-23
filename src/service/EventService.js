@@ -33,5 +33,7 @@ export const events = {
     updatedUserName: 'updated-user-name',
     moveMap: 'move-map',
     newEquipmentLocations: 'new-equipment-locations',
-    selectedEquipment: 'selected-equipment'
+    selectedEquipment: 'selected-equipment',
+    startRent: 'start-rent',
+    stopRent: 'stop-rent',
 }
