@@ -444,6 +444,11 @@ function ActiveRents() {
         eventService.subscribe(events.stopRent, () => loadRents());
     }, [])
 
+    if (!loading && rents.length === 0)
+        return (
+            <></>
+        )
+
     return (
 
 
