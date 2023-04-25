@@ -212,7 +212,6 @@ function ButtonBlock({loading}) {
             await userService.signout();
             navigate(routes.login);
         } catch (e) {
-
         }
     }
 
@@ -221,7 +220,7 @@ function ButtonBlock({loading}) {
             <Box w='100%' p={3}>
                 <Skeleton isLoaded={!loading}>
                     <Button w='100%'
-                            onClick={() => navigate('/orders')}
+                            onClick={() => navigate(routes.archiveRents)}
                             colorScheme='green'>
                         История поездок
                     </Button>
@@ -229,9 +228,6 @@ function ButtonBlock({loading}) {
             </Box>
             <Box w='100%' p={3}>
                 <Button w='100%' onClick={signout}>Выйти из аккаунта</Button>
-            </Box>
-            <Box w='100%' p={3}>
-                <Button w='100%' rightIcon={<MdDelete/>}>Удалить аккаунт</Button>
             </Box>
         </VStack>
     )

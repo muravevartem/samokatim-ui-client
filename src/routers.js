@@ -11,7 +11,7 @@ import {ErrorPage, ErrorRentPage} from "./component/ErrorPage";
 export const routes = {
     menu: '/menu',
     rent: '/rents',
-    archive: `rents/archived`,
+    archiveRents: `rents/archived`,
     profile: '/profile',
     settings: '/settings',
     home: '/',
@@ -24,7 +24,7 @@ export const router = createBrowserRouter(
         <Route path={routes.home} element={<Root/>} errorElement={<ErrorPage/>}>
             <Route path='' element={<HomePage/>}/>
             <Route path={routes.menu} element={<MenuPage/>}/>
-            <Route path={routes.archive} element={<ArchiveRentPage/>}/>
+            <Route path={routes.archiveRents} element={<ArchiveRentPage/>}/>
             <Route path={routes.profile} element={<ProfilePage/>}/>
             <Route path={routes.login} element={<LoginPage/>}/>
             <Route path={`${routes.rent}/error`} element={<ErrorRentPage/>}/>

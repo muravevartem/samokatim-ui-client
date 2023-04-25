@@ -10,7 +10,8 @@ import {
     CardFooter,
     CardHeader,
     CloseButton,
-    Container, Divider,
+    Container,
+    Divider,
     Heading,
     HStack,
     IconButton,
@@ -19,11 +20,13 @@ import {
     Menu,
     MenuButton,
     MenuItem,
-    MenuList, SimpleGrid,
+    MenuList,
     Skeleton,
-    Slide, Stack, Stat, StatHelpText, StatLabel, StatNumber,
+    Slide,
+    Stack,
     Tag,
-    Text, useToast,
+    Text,
+    useToast,
     VStack
 } from "@chakra-ui/react";
 import {MapContainer, Marker, TileLayer, Tooltip, useMap} from "react-leaflet";
@@ -41,7 +44,6 @@ import {paymentService} from "../service/PaymentService";
 import moment from "moment";
 import {FOR_RENT_EQUIPMENT_ICON, MY_LOCATION_ICON, RENTED_EQUIPMENT_ICON} from "./Icons";
 import {IoMdCash} from "react-icons/io";
-import {StatV2} from "./util";
 
 export function HomePage() {
     let navigate = useNavigate();
@@ -662,9 +664,7 @@ function MainView() {
                         </MenuButton>
                         <MenuList>
                             <MenuItem onClick={() => navigate(routes.profile)}>Профиль</MenuItem>
-                            <MenuItem onClick={() => navigate(routes.archive)}>История</MenuItem>
-                            <MenuItem onClick={() => {
-                            }}>Настройки</MenuItem>
+                            <MenuItem onClick={() => navigate(routes.archiveRents)}>История</MenuItem>
                         </MenuList>
                     </Menu>
                     <ActiveRents/>
