@@ -61,7 +61,7 @@ export function RentPage() {
 
     return (
         <VStack w='100%' alignItems='start'>
-            {rent.track &&
+            {(rent.track && rent.track.length > 0) &&
                 <Box h='50vh' w='100%'>
                     <MapContainer
                         zoomControl={false}
@@ -77,8 +77,11 @@ export function RentPage() {
                     </MapContainer>
                 </Box>
             }
-            {(!rent.track || rent.track.length === 0) &&
+            {(rent.track && rent.track.length === 0) &&
                 <Alert><AlertIcon/>Маршрут передвижения не записывался</Alert>
+            }
+            {(!rent.track) &&
+                <Alert status='loading'><AlertIcon/>Формируется маршрут перемещения</Alert>
             }
             <IconButton aria-label='Back'
                         colorScheme='green'
