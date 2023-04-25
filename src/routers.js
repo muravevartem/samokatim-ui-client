@@ -11,7 +11,7 @@ import {ErrorPage, ErrorRentPage} from "./component/ErrorPage";
 export const routes = {
     menu: '/menu',
     rent: '/rents',
-    archiveRents: 'rents/archived',
+    archiveRents: '/rents/archived',
     profile: '/profile',
     settings: '/settings',
     home: '/',
