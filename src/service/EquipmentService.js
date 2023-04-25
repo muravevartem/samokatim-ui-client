@@ -3,8 +3,8 @@ import {events, eventService} from "./EventService.js";
 import {$handbook_api, $monitor_api} from "../http.js";
 
 export const equipmentIcons = {
-    BIKE: ({size, color}) => <MdPedalBike size={size ? size : 48} color={color ? color : 'black'}/>,
-    SCOOTER: ({size, color}) => <MdElectricScooter size={size ? size : 48} color={color ? color : 'black'}/>,
+    BICYCLE: ({size, color}) => <MdPedalBike size={size ? size : 48} color={color ? color : 'black'}/>,
+    SCOOTER_EL: ({size, color}) => <MdElectricScooter size={size ? size : 48} color={color ? color : 'black'}/>,
     UNKNOWN: ({size, color}) => <MdInfo size={size ? size : 48} color={color ? color : 'black'}/>
 }
 

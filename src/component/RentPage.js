@@ -84,6 +84,7 @@ export function RentPage() {
                 <Alert status='loading'><AlertIcon/>Формируется маршрут перемещения</Alert>
             }
             <IconButton aria-label='Back'
+                        zIndex={999}
                         colorScheme='green'
                         onClick={()=>navigate(-1)}
                         size='lg'

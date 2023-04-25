@@ -1,18 +1,18 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
     Badge,
     Box,
     Button,
     Card,
-    CardBody,
+    CardBody, Divider,
     Grid,
     GridItem,
     Heading,
-    HStack,
+    HStack, Skeleton,
     Slide,
-    Spinner,
+    Spinner, Tag,
     Text,
-    useDisclosure,
+    useDisclosure, useToast,
     VStack
 } from "@chakra-ui/react";
 import {useNavigate} from "react-router-dom";
@@ -20,6 +20,9 @@ import {Header, pageTitle} from "./util.js";
 import moment from "moment";
 import {equipmentIcons} from "../service/EquipmentService.js";
 import InfiniteScroll from "react-infinite-scroll-component";
+import {paymentService} from "../service/PaymentService";
+import {errorService} from "../service/ErrorService";
+import {IoMdCash, IoMdTime} from "react-icons/io";
 
 export function ArchiveRentPage() {
     pageTitle('Самокатим.История')
@@ -34,151 +37,83 @@ export function ArchiveRentPage() {
     );
 }
 
-let id = 10;
-const orders = {
-    content: [
-        {
-            id: 2,
-            price: 234,
-            type: 'BIKE',
-            tracked: true,
-            start: {
-                time: new Date(),
-                address: 'Ул.Блинова, 25'
-            }
-        },
-        {
-            id: 3,
-            price: 234,
-            type: 'BIKE',
-            tracked: true,
-            start: {
-                time: new Date(),
-                address: 'Ул.Блинова, 21'
-            }
-        },
-        {
-            id: 4,
-            price: 234,
-            type: 'SCOOTER',
-            tracked: true,
-            start: {
-                time: new Date(),
-                address: 'Ул.Блинова, 25'
-            }
-        },
-        {
-            id: 5,
-            price: 234,
-            type: 'SCOOTER',
-            tracked: true,
-            start: {
-                time: new Date(),
-                address: 'Ул.Блинова, 25'
-            }
-        },
-        {
-            id: 6,
-            price: 234,
-            type: 'SCOOTER',
-            tracked: true,
-            start: {
-                time: new Date(),
-                address: 'Ул.Блинова, 25'
-            }
-        },
-        {
-            id: 7,
-            price: 234,
-            type: 'SCOOTER',
-            tracked: true,
-            start: {
-                time: new Date(),
-                address: 'Ул.Блинова, 25'
-            }
-        }
-    ],
-    last: false
-};
-
 function HistoricalOrderBlock() {
-    const [data, setData] = useState(orders);
+    const [data, setData] = useState({content: [], page: -1, size: 15});
     const [loading, setLoading] = useState(false);
 
-    function onLoad(e) {
-        setLoading(true)
-        setTimeout(() => {
-            setLoading(false)
+    const toast = useToast();
+
+    async function onLoad() {
+        try {
+            setLoading(true);
+            const pageable = {page: data.page + 1, size: data.size, sort: 'id,desc', last: true};
+            console.log(pageable);
+            let rents = await paymentService.getMyArchiveRents(pageable);
             setData({
-                content: data.content.concat(orders.content),
-                last: false
+                content: [...data.content, ...rents.content],
+                page: rents.number,
+                size: rents.size,
+                last: rents.last
+            });
+        } catch (e) {
+            toast({
+                status: 'error',
+                title: errorService.beautify(e)
             })
-        }, 1000)
+        } finally {
+            setLoading(false);
+        }
     }
+
+    useEffect(() => {
+        onLoad();
+    }, [])
 
     return (
         <VStack alignItems='center'
                 w='100%'
+                divider={<Divider/>}
                 spacing={4}
                 paddingY={10}>
-            {data.content.map((value, index, array) => <OrderBlock order={value} key={index}/>)}
-            {loading ? <Spinner/> : <Button onClick={onLoad}>Показать ещё</Button>}
+            {data.content.map(rent => <RentCard rent={rent} key={rent.id}/>)}
+            {!data.last &&
+                <Skeleton isLoaded={!loading}>
+                    <Button onClick={onLoad}>Показать ещё</Button>
+                </Skeleton>
+            }
         </VStack>
 
     )
 }
 
-function OrderBlock({order}) {
+function RentCard({rent}) {
     let navigate = useNavigate();
     let iconParams = {size: 48, color: 'black'};
-    const {isOpen, onOpen, onClose} = useDisclosure()
     return (
-        <Card w='100%'
-              maxW={768}
-              transition='1s'
-              _hover={{shadow: 'lg'}}>
-            <CardBody>
-                <Grid templateColumns='repeat(5, 1fr)'>
-                    <GridItem colSpan={4}>
-                        <VStack alignItems='start'>
-                            <Heading size='md'>
-                                {moment(order.start.time).format('LLL')}
-                            </Heading>
-                            {!order.tracked &&
-                                <Box>
-                                    <Badge colorScheme='yellow'
-                                           onClick={onOpen}>
-                                        Без отслеживания
-                                    </Badge>
-                                    <Slide direction='bottom' in={isOpen} style={{zIndex: 999}}>
-                                        <VStack p={10}
-                                                bgColor='green.100'
-                                                alignItems='start'>
-                                            <Heading size='md'>Геолокации оборудования</Heading>
-                                            <Text>
-                                                Для оборудования с поддержкой отслеживания геолокации
-                                                возможно сохранение пройденного пути в истории заказов
-                                            </Text>
-                                            <HStack justifyContent='end' w='100%'>
-                                                <Button onClick={onClose}>Закрыть</Button>
-                                            </HStack>
-                                        </VStack>
-                                    </Slide>
-                                </Box>
-
-                            }
-                            <Text>{order.start.address}</Text>
-                            <Text>{order.price}₽</Text>
-                            <Button zIndex={1} onClick={() => navigate(`/orders/${order.id}`)}>Подробнее</Button>
-                        </VStack>
-                    </GridItem>
-                    <GridItem colStart={5} colEnd={5}>
-                        <HStack justifyContent='end'>
-                            {equipmentIcons[order.type] ? equipmentIcons[order.type](iconParams) : equipmentIcons.UNKNOWN(iconParams)}
-                        </HStack>
-                    </GridItem>
-                </Grid>
-            </CardBody>
-        </Card>
+        <Grid templateColumns='repeat(5, 1fr)'
+              w='100%'
+              p={3}
+              onClick={() => navigate(`/rents/${rent.id}`)}>
+            <GridItem colSpan={4}>
+                <VStack alignItems='start'>
+                    <Heading size='md'>
+                        Аренда #{rent.id}
+                    </Heading>
+                    <HStack>
+                        <IoMdCash/>
+                        <Tag>{rent.price ?? '1000'} P</Tag>
+                    </HStack>
+                    <HStack>
+                        <IoMdTime/>
+                        <Tag>{moment(rent.endTime).diff(moment(rent.startTime), 'minutes')} мин</Tag>
+                    </HStack>
+                </VStack>
+            </GridItem>
+            <GridItem colStart={5} colEnd={5}>
+                <HStack justifyContent='end'>
+                    {equipmentIcons[rent.equipmentType] ? equipmentIcons[rent.equipmentType](iconParams) : equipmentIcons.UNKNOWN(iconParams)}
+                </HStack>
+            </GridItem>
+        </Grid>
     )
 }

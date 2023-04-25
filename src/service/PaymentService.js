@@ -6,6 +6,11 @@ class PaymentService {
         return response.data;
     }
 
+    async getMyArchiveRents(pageable) {
+        let response = await $handbook_api.get(`/api/v1/rents/archive?page=${pageable.page}&size=${pageable.size}&sort=${pageable.sort}`)
+        return response.data;
+    }
+
     async getMyRentOfEquipment(equipmentId) {
         let response = await $handbook_api.get(`/api/v1/rents?equipment=${equipmentId}`)
         return response.data;
