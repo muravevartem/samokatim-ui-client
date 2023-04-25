@@ -77,7 +77,7 @@ export function RentPage() {
                     </MapContainer>
                 </Box>
             }
-            {!rent.track &&
+            {(!rent.track || rent.track.length === 0) &&
                 <Alert><AlertIcon/>Маршрут передвижения не записывался</Alert>
             }
             <IconButton aria-label='Back'
