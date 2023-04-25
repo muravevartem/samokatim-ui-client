@@ -99,6 +99,9 @@ function RentCard({rent}) {
                     <Heading size='md'>
                         Аренда #{rent.id}
                     </Heading>
+                    <Heading size='md'>
+                        {moment(rent.startTime).format('lll')}
+                    </Heading>
                     <HStack>
                         <IoMdCash/>
                         <Tag>{rent.price ?? '1000'} P</Tag>
