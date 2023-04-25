@@ -1,8 +1,9 @@
 import React, {useEffect} from "react";
-import {Heading, HStack, IconButton} from "@chakra-ui/react";
+import {Card, CardBody, Heading, HStack, IconButton, Skeleton, Tag, VStack} from "@chakra-ui/react";
 import {MdArrowBack} from "react-icons/md";
 import {useNavigate} from "react-router-dom";
 import moment from "moment";
+import {IoMdCash} from "react-icons/io";
 
 export function pageTitle(title) {
     document.title = title
@@ -27,5 +28,25 @@ export function beautifulRelativeDate(date) {
 export function NotContent() {
     return (
         <></>
+    )
+}
+
+export function StatV2({loaded, number, type, icon}) {
+    return (
+        <Skeleton isLoaded={loaded}>
+            <Card w='max-content'>
+                <CardBody>
+                    <VStack w='100%' alignItems='start'>
+                        <HStack spacing={2}>
+                            <Tag>
+                                <Heading>{number}</Heading>
+                            </Tag>
+                            <Heading>{type}</Heading>
+                        </HStack>
+                        {icon}
+                    </VStack>
+                </CardBody>
+            </Card>
+        </Skeleton>
     )
 }

@@ -28,6 +28,11 @@ class PaymentService {
         let response = await $handbook_api.put(`/api/v1/rents/${rent.id}/complete`);
         return response.data;
     }
+
+    async getRent(rentId) {
+        let response = await $handbook_api.get(`/api/v1/rents/${rentId}`);
+        return response.data;
+    }
 }
 
 export const paymentService = new PaymentService();

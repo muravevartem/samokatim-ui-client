@@ -1,21 +1,28 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {
     Alert,
-    AlertIcon, Badge,
+    AlertIcon,
+    Badge,
     Box,
     Button,
-    Card, CardBody, CardFooter, CardHeader, CloseButton,
-    Container,
+    Card,
+    CardBody,
+    CardFooter,
+    CardHeader,
+    CloseButton,
+    Container, Divider,
     Heading,
-    HStack, Icon,
+    HStack,
     IconButton,
     Input,
     InputGroup,
     Menu,
     MenuButton,
     MenuItem,
-    MenuList, Radio, RadioGroup, SimpleGrid, Skeleton,
-    Slide, Stack, Tag,
+    MenuList, SimpleGrid,
+    Skeleton,
+    Slide, Stack, Stat, StatHelpText, StatLabel, StatNumber,
+    Tag,
     Text,
     VStack
 } from "@chakra-ui/react";
@@ -23,17 +30,18 @@ import {MapContainer, Marker, TileLayer, Tooltip, useMap} from "react-leaflet";
 import {locations, locationService} from "../service/LocationService.js";
 import {errorService} from "../service/ErrorService.js";
 import {events, eventService} from "../service/EventService.js";
-import {MdBikeScooter, MdCarRental, MdKey, MdLocationOn, MdMenu} from "react-icons/md";
+import {MdBikeScooter, MdLocationOn, MdMenu} from "react-icons/md";
 import {useNavigate} from "react-router-dom";
 import {routes} from "../routers.js";
 import {userService} from "../service/UserService.js";
-import L from 'leaflet'
 import {companyService} from "../service/CompanyService.js";
 import isEmpty from "validator/es/lib/isEmpty.js";
 import {equipmentService} from "../service/EquipmentService.js";
 import {paymentService} from "../service/PaymentService";
 import moment from "moment";
 import {FOR_RENT_EQUIPMENT_ICON, MY_LOCATION_ICON, RENTED_EQUIPMENT_ICON} from "./Icons";
+import {IoMdCash} from "react-icons/io";
+import {StatV2} from "./util";
 
 export function HomePage() {
     let navigate = useNavigate();
@@ -214,6 +222,7 @@ function EquipmentLocationMarkers() {
         map.on('moveend', event => {
             loadPoints()
         })
+        eventService.subscribe(events.newEquipmentLocations, loadPoints)
         loadPoints();
     }, [])
 
@@ -221,14 +230,13 @@ function EquipmentLocationMarkers() {
     return (
         <>
             {points.map(point => (
-                <EquipmentMarker point={point} key={point.equipmentId}/>
+                <EquipmentMarker point={point} key={point.id}/>
             ))}
         </>
     )
 }
 
 function EquipmentMarker({point}) {
-
 
 
     const eventHandlers = {
@@ -288,7 +296,7 @@ function EquipmentCard() {
 
     useEffect(() => {
         setError(null);
-    },[open])
+    }, [open])
 
     async function loadEquipment(equipmentPoint) {
         try {
@@ -311,6 +319,7 @@ function EquipmentCard() {
                 await paymentService.startRent({equipmentId: selectedEquipment.id});
                 eventService.raise(events.startRent);
                 setOpen(false);
+                eventService.raise(events.newEquipmentLocations);
             } catch (e) {
                 setError(errorService.beautify(e));
             } finally {
@@ -337,7 +346,7 @@ function EquipmentCard() {
             }
 
             <Skeleton isLoaded={!loading}>
-                <VStack bgColor='white' minH={200} alignItems='start' p={5} w='100%' spacing={4}>
+                <VStack bgColor='white' minH={200} alignItems='start' p={5} w='100%' spacing={6} divider={<Divider/>}>
                     <HStack w='100%' justifyContent='space-between'>
                         <VStack alignItems='start' spacing={0}>
                             <Heading size='lg'>{selectedEquipment.name}</Heading>
@@ -351,13 +360,15 @@ function EquipmentCard() {
                     {selectedGeoObject.status === 'USED' &&
                         <RentPrompt geoObject={selectedGeoObject}/>
                     }
-                    <Button colorScheme='green'
-                            w='100%'
-                            p={3}
-                            disabled={loading}
-                            onClick={startRent}>
-                        Арендовать
-                    </Button>
+                    {selectedGeoObject.status === 'WAITING' &&
+                        <Button colorScheme='green'
+                                w='100%'
+                                p={3}
+                                disabled={loading}
+                                onClick={startRent}>
+                            Арендовать
+                        </Button>
+                    }
 
                 </VStack>
             </Skeleton>
@@ -409,25 +420,26 @@ function RentPrompt({geoObject}) {
         )
 
     return (
-        <Skeleton isLoaded={!loading} w='100%'>
-            <Card w='100%'>
-                <CardHeader>
-                    <Heading size='md'>Аренда</Heading>
-                </CardHeader>
-                <CardBody>
-                    <Text>Начало аренды: <Tag>{moment(rent.startTime).format('LLL')}</Tag></Text>
-                </CardBody>
-                <CardFooter>
-                    <VStack>
-                        <Button colorScheme='yellow'
-                                onClick={stopRent}>
-                            Прекратить
-                        </Button>
-                    </VStack>
-                </CardFooter>
-            </Card>
-        </Skeleton>
+        <VStack w='100%' alignItems='start' spacing={3}>
+            <Heading size='md'>Аренда #{rent.id}</Heading>
+            <Stack>
+                <Heading size='sm'>Начало</Heading>
+                <Tag>{moment(rent.startTime).format('LLL')}</Tag>
+            </Stack>
+            <VStack alignItems='start'>
+                <Heading size='sm'>Продолжительность</Heading>
+                <Tag>{moment().diff(moment(rent.startTime), 'minutes')} мин</Tag>
+            </VStack>
+
+
+            <Button colorScheme='yellow'
+                    w='100%'
+                    onClick={stopRent}>
+                Прекратить аренду
+            </Button>
+        </VStack>
     )
+
 }
 
 function RateView({equipment}) {
@@ -460,27 +472,13 @@ function RateView({equipment}) {
     }
 
     return (
-        <Skeleton isLoaded={!loading} w='100%'>
-            <RateElement key={rate.id} rate={rate}/>
-        </Skeleton>
-    )
-}
-
-function RateElement({rate}) {
-    return (
-        <Card>
-            <CardHeader>
-                <Heading size='md'>{rate.name}</Heading>
-            </CardHeader>
-            <CardBody>
-                <VStack w='100%' alignItems='start'>
-                    <Heading size='lg'>
-                        {rate.price}₽/Мин
-                    </Heading>
-                </VStack>
-            </CardBody>
-        </Card>
-
+        <VStack w='100%' alignItems='start'>
+            <Heading size='md'>Тариф</Heading>
+            <HStack>
+                <IoMdCash color='green' size={24}/>
+                <Heading size='sm'>{rate.price} P/мин</Heading>
+            </HStack>
+        </VStack>
     )
 }
 
@@ -529,14 +527,14 @@ function ActiveRents() {
                    }}>
                 <VStack bgColor='white' alignItems='start' w='100%' p={2}>
                     <HStack justifyContent='end' w='100%'>
-                        <CloseButton onClick={()=>setOpen(false)}/>
+                        <CloseButton onClick={() => setOpen(false)}/>
                     </HStack>
                     <VStack spacing={4} w='100%'>
                         {rents.length === 0 &&
                             <Text>Пусто</Text>
                         }
                         {rents.map(rent => (
-                           <RentView rent={rent} key={rent.id}/>
+                            <RentView rent={rent} key={rent.id}/>
                         ))}
                     </VStack>
                 </VStack>

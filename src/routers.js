@@ -6,6 +6,7 @@ import {ArchiveRentPage} from "./component/ArchiveRentPage.js";
 import {ProfilePage} from "./component/ProfilePage.js";
 import {LoginPage} from "./component/LoginPage.js";
 import {RentPage} from "./component/RentPage";
+import {ErrorPage, ErrorRentPage} from "./component/ErrorPage";
 
 export const routes = {
     menu: '/menu',
@@ -20,12 +21,13 @@ export const routes = {
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
-        <Route path={routes.home} element={<Root/>}>
+        <Route path={routes.home} element={<Root/>} errorElement={<ErrorPage/>}>
             <Route path='' element={<HomePage/>}/>
             <Route path={routes.menu} element={<MenuPage/>}/>
             <Route path={routes.archive} element={<ArchiveRentPage/>}/>
             <Route path={routes.profile} element={<ProfilePage/>}/>
             <Route path={routes.login} element={<LoginPage/>}/>
+            <Route path={`${routes.rent}/error`} element={<ErrorRentPage/>}/>
             <Route path={`${routes.rent}/:rentId`} element={<RentPage/>}/>
         </Route>
     )
