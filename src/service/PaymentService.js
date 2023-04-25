@@ -6,6 +6,11 @@ class PaymentService {
         return response.data;
     }
 
+    async getMyRentOfEquipment(equipmentId) {
+        let response = await $handbook_api.get(`/api/v1/rents?equipment=${equipmentId}`)
+        return response.data;
+    }
+
     async getMyActiveRent() {
         let response = await $handbook_api.get(`/api/v1/rents?active&my`);
         return response.data;

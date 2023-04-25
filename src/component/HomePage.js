@@ -33,7 +33,7 @@ import isEmpty from "validator/es/lib/isEmpty.js";
 import {equipmentService} from "../service/EquipmentService.js";
 import {paymentService} from "../service/PaymentService";
 import moment from "moment";
-import {FOR_RENT_EQUIPMENT_ICON, MY_LOCATION_ICON} from "./Icons";
+import {FOR_RENT_EQUIPMENT_ICON, MY_LOCATION_ICON, RENTED_EQUIPMENT_ICON} from "./Icons";
 
 export function HomePage() {
     let navigate = useNavigate();
@@ -231,19 +231,17 @@ function EquipmentMarker({point}) {
 
 
 
-    const eventHandlers = useMemo(
-        () => ({
-            click() {
-                console.log(`selected ${point.id}`)
-                eventService.raiseWithData(events.selectedEquipment, {equipmentId: point.id});
-            },
-        }),
-        [],
-    )
+    const eventHandlers = {
+        click() {
+            console.log(`selected ${point.id}`)
+            eventService.raiseWithData(events.selectedEquipment, point);
+        },
+    }
 
     return (
-        <Marker position={[point.lat, point.lng]} icon={FOR_RENT_EQUIPMENT_ICON} eventHandlers={eventHandlers}>
-
+        <Marker position={[point.lat, point.lng]}
+                icon={point.status === 'WAITING' ? RENTED_EQUIPMENT_ICON : FOR_RENT_EQUIPMENT_ICON}
+                eventHandlers={eventHandlers}>
         </Marker>
     )
 }
@@ -282,6 +280,7 @@ function CompanyCard({company}) {
 
 function EquipmentCard() {
     const [selectedEquipment, setSelectedEquipment] = useState({});
+    const [selectedGeoObject, setSelectedGeoObject] = useState({})
     const [selectedRate, setSelectedRate] = useState();
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -291,14 +290,13 @@ function EquipmentCard() {
         setError(null);
     },[open])
 
-    async function loadEquipment(equipmentId) {
+    async function loadEquipment(equipmentPoint) {
         try {
-            if (!loading) {
-                setLoading(true)
-                setOpen(true)
-                let equipment = await equipmentService.getOne(equipmentId);
-                setSelectedEquipment(equipment);
-            }
+            setSelectedGeoObject(equipmentPoint);
+            setLoading(true)
+            setOpen(true)
+            let equipment = await equipmentService.getOne(equipmentPoint.id);
+            setSelectedEquipment(equipment);
         } catch (e) {
             setSelectedEquipment(null);
         } finally {
@@ -322,7 +320,7 @@ function EquipmentCard() {
     }
 
     useEffect(() => {
-        eventService.subscribe(events.selectedEquipment, ({equipmentId}) => loadEquipment(equipmentId));
+        eventService.subscribe(events.selectedEquipment, (equipmentPoint) => loadEquipment(equipmentPoint));
     }, [])
 
 
@@ -350,6 +348,9 @@ function EquipmentCard() {
                     {selectedEquipment &&
                         <RateView equipment={selectedEquipment} value={selectedRate} setValue={setSelectedRate}/>
                     }
+                    {selectedGeoObject.status === 'USED' &&
+                        <RentPrompt geoObject={selectedGeoObject}/>
+                    }
                     <Button colorScheme='green'
                             w='100%'
                             p={3}
@@ -357,11 +358,75 @@ function EquipmentCard() {
                             onClick={startRent}>
                         Арендовать
                     </Button>
+
                 </VStack>
             </Skeleton>
 
 
         </Slide>
+    )
+}
+
+function RentPrompt({geoObject}) {
+    const [loading, setLoading] = useState(false);
+    const [rent, setRent] = useState({});
+    const [error, setError] = useState();
+    const navigate = useNavigate();
+
+    async function loadRent() {
+        try {
+            setLoading(true);
+            let rent = await paymentService.getMyRentOfEquipment(geoObject.id);
+            setRent(rent);
+        } catch (e) {
+            setError(errorService.beautify(e));
+        } finally {
+            setLoading(false);
+        }
+    }
+
+
+    useEffect(() => {
+        loadRent()
+    }, []);
+
+    async function stopRent() {
+        try {
+            setLoading(true);
+            console.log(rent)
+            await paymentService.stopRent(rent);
+            navigate(`${routes.rent}/${rent.id}`)
+        } catch (e) {
+            setError(errorService.beautify(e));
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    if (error)
+        return (
+            <Alert><AlertIcon/>{error.message}</Alert>
+        )
+
+    return (
+        <Skeleton isLoaded={!loading} w='100%'>
+            <Card w='100%'>
+                <CardHeader>
+                    <Heading size='md'>Аренда</Heading>
+                </CardHeader>
+                <CardBody>
+                    <Text>Начало аренды: <Tag>{moment(rent.startTime).format('LLL')}</Tag></Text>
+                </CardBody>
+                <CardFooter>
+                    <VStack>
+                        <Button colorScheme='yellow'
+                                onClick={stopRent}>
+                            Прекратить
+                        </Button>
+                    </VStack>
+                </CardFooter>
+            </Card>
+        </Skeleton>
     )
 }
 
@@ -391,9 +456,7 @@ function RateView({equipment}) {
     }, [])
 
     if (error) {
-        return <Alert status='error'>
-            <AlertIcon/>{error.message}
-        </Alert>
+        return <Alert status='error'><AlertIcon/>{error.message}</Alert>
     }
 
     return (
