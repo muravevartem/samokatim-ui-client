@@ -23,7 +23,7 @@ import {
     Skeleton,
     Slide, Stack, Stat, StatHelpText, StatLabel, StatNumber,
     Tag,
-    Text,
+    Text, useToast,
     VStack
 } from "@chakra-ui/react";
 import {MapContainer, Marker, TileLayer, Tooltip, useMap} from "react-leaflet";
@@ -191,7 +191,11 @@ function EquipmentLocationMarkers() {
     const [points, setPoints] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    const toast = useToast();
+
     const map = useMap();
+
+    let timer;
 
     function toPoints(map) {
         let bounds = map.getBounds();
@@ -211,19 +215,31 @@ function EquipmentLocationMarkers() {
                 setPoints(points)
             }
         } catch (e) {
-
+            console.log(e)
+            toast({
+                status: 'error',
+                title: 'Ошибка загрузки',
+                duration: 2000,
+                isClosable: true
+            })
         } finally {
             setLoading(false);
-            setTimeout(loadPoints, 10000)
         }
     }
+
 
     useEffect(() => {
         map.on('moveend', event => {
             loadPoints()
         })
         eventService.subscribe(events.newEquipmentLocations, loadPoints)
-        loadPoints();
+        timer = setInterval(loadPoints, 5000)
+
+        return () => {
+            console.log(timer)
+            clearInterval(timer)
+        }
+
     }, [])
 
 

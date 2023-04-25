@@ -31,22 +31,9 @@ export function NotContent() {
     )
 }
 
-export function StatV2({loaded, number, type, icon}) {
-    return (
-        <Skeleton isLoaded={loaded}>
-            <Card w='max-content'>
-                <CardBody>
-                    <VStack w='100%' alignItems='start'>
-                        <HStack spacing={2}>
-                            <Tag>
-                                <Heading>{number}</Heading>
-                            </Tag>
-                            <Heading>{type}</Heading>
-                        </HStack>
-                        {icon}
-                    </VStack>
-                </CardBody>
-            </Card>
-        </Skeleton>
-    )
+export function toLastPoint(track) {
+    if (track) {
+        return track[track.length - 1];
+    }
+    return null;
 }
