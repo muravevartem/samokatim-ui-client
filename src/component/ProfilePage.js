@@ -26,6 +26,7 @@ import {routes} from "../routers.js";
 import {events, eventService} from "../service/EventService.js";
 
 export function ProfilePage() {
+
     let [loading, setLoading] = useState(false);
     let [user, setUser] = useState({});
 

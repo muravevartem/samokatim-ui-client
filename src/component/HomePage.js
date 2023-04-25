@@ -206,6 +206,7 @@ function EquipmentLocationMarkers() {
 
         } finally {
             setLoading(false);
+            setTimeout(loadPoints, 10000)
         }
     }
 
@@ -233,8 +234,8 @@ function EquipmentMarker({point}) {
     const eventHandlers = useMemo(
         () => ({
             click() {
-                console.log(`selected ${point.equipmentId}`)
-                eventService.raiseWithData(events.selectedEquipment, {equipmentId: point.equipmentId});
+                console.log(`selected ${point.id}`)
+                eventService.raiseWithData(events.selectedEquipment, {equipmentId: point.id});
             },
         }),
         [],
@@ -487,11 +488,14 @@ function RentView({rent}) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState();
 
+    let navigate = useNavigate();
+
     async function stopRent() {
         try {
             setLoading(true);
             let stopedRent = await paymentService.stopRent(rent);
             eventService.raiseWithData(events.stopRent, stopedRent);
+            navigate(`${routes.rent}/${rent.id}`)
         } catch (e) {
             setError(errorService.beautify(e));
         } finally {
@@ -581,7 +585,7 @@ function MainView() {
                         </MenuButton>
                         <MenuList>
                             <MenuItem onClick={() => navigate(routes.profile)}>Профиль</MenuItem>
-                            <MenuItem onClick={() => navigate(routes.orders)}>История</MenuItem>
+                            <MenuItem onClick={() => navigate(routes.archive)}>История</MenuItem>
                             <MenuItem onClick={() => {
                             }}>Настройки</MenuItem>
                         </MenuList>

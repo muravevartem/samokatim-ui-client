@@ -21,7 +21,7 @@ import moment from "moment";
 import {equipmentIcons} from "../service/EquipmentService.js";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-export function OrderPage() {
+export function ArchiveRentPage() {
     pageTitle('Самокатим.История')
 
     return (
