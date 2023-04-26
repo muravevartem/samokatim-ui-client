@@ -106,10 +106,9 @@ function RentCard({rent}) {
                         <IoMdCash/>
                         <Tag>{rent.price ?? '1000'} P</Tag>
                     </HStack>
-                    <HStack>
-                        <IoMdTime/>
-                        <Tag>{moment(rent.endTime).diff(moment(rent.startTime), 'minutes')} мин</Tag>
-                    </HStack>
+                    
+                        
+
                 </VStack>
             </GridItem>
             <GridItem colStart={5} colEnd={5}>
