@@ -17,8 +17,8 @@ import {
 } from "@chakra-ui/react";
 import {useNavigate} from "react-router-dom";
 import {userService} from "../service/UserService.js";
-import {IoMdEye, IoMdEyeOff, IoMdKey, IoMdPhonePortrait} from "react-icons/io";
-import isMobilePhone from "validator/es/lib/isMobilePhone.js";
+import {IoMdEye, IoMdEyeOff, IoMdKey, IoMdMail} from "react-icons/io";
+import isEmail from "validator/es/lib/isEmail.js";
 
 export function LoginPage() {
     const [state, setState] = useState({
@@ -84,16 +84,16 @@ export function LoginPage() {
                 <Skeleton isLoaded={!loading}>
                     <InputGroup>
                         <InputLeftAddon>
-                            <IoMdPhonePortrait/>
+                            <IoMdMail/>
                         </InputLeftAddon>
                         <Input
                             value={state.username}
-                            isInvalid={state.username !== '' && !isMobilePhone(state.username, 'ru-RU')}
+                            isInvalid={state.username !== '' && !isEmail(state.username)}
                             w='100%'
                             onChange={event => onChange({
                                 username: event.target.value
                             })}
-                            placeholder='+79871234568'
+                            placeholder='mail@samokatim.com'
                         />
                     </InputGroup>
                 </Skeleton>
@@ -117,7 +117,7 @@ export function LoginPage() {
                 </Skeleton>
                 <Stack spacing={3}>
                     <Button onClick={onSubmit}
-                            isDisabled={!isMobilePhone(state.username, 'ru-RU')}
+                            isDisabled={!isEmail(state.username) || state.password < 8}
                             colorScheme='green'>
                         Войти
                     </Button>
