@@ -12,6 +12,7 @@ export class EquipmentService {
 
     constructor() {
         eventService.subscribe(events.moveMap, data => this.getPoints(data))
+        eventService.subscribe(events.selectEquipment, console.log)
     }
 
     async getPoints(data) {

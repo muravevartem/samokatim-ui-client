@@ -1,22 +1,31 @@
 import React, {useEffect, useState} from "react";
 import {
-    AbsoluteCenter,
-    Box,
     Button,
-    ButtonGroup,
     Center,
-    Container,
+    Divider,
     Heading,
-    Input, Link, Skeleton,
-    Stack, useToast,
-    VStack
+    HStack,
+    IconButton,
+    Input,
+    InputGroup,
+    InputLeftAddon,
+    InputRightElement,
+    Link,
+    Skeleton,
+    Stack,
+    useToast
 } from "@chakra-ui/react";
 import {useNavigate} from "react-router-dom";
 import {userService} from "../service/UserService.js";
-import {AxiosError} from "axios";
+import {IoMdEye, IoMdEyeOff, IoMdKey, IoMdPhonePortrait} from "react-icons/io";
+import isMobilePhone from "validator/es/lib/isMobilePhone.js";
 
 export function LoginPage() {
-    const [signInObject, setSignInObject] = useState({login: '', password: ''});
+    const [state, setState] = useState({
+        username: '',
+        password: '',
+        showPass: false
+    });
     const [loading, setLoading] = useState(false);
     let navigate = useNavigate();
     let toast = useToast();
@@ -29,77 +38,96 @@ export function LoginPage() {
     async function onSubmit() {
         setLoading(true);
         try {
-            let signInResult = await userService.signin(signInObject);
-            if (signInResult.newUser) {
-                toast({
-                    status: 'success',
-                    title: 'Добро пожаловать',
-                    duration: 2000,
-                    isClosable: true,
-                })
-            }
-            setTimeout(() => navigate(-1), 2000);
+            let signInResult = await userService.signin(state);
+            navigate(-1)
         } catch (e) {
-            console.log(e)
-            if (e instanceof AxiosError) {
-                toast({
-                    status: 'error',
-                    title: 'Ошибка аунтентификации',
-                    description: e.response.data.message,
-                    duration: 3000,
-                    isClosable: true,
-                })
-            } else {
-                toast({
-                    status: 'error',
-                    title: 'Неизвестная ошибка',
-                    duration: 3000,
-                    isClosable: true,
-                })
-            }
+            toast({
+                status: 'error',
+                title: 'Ошибка аунтентификации',
+                description: e.response.data.message,
+                duration: 3000,
+                isClosable: true,
+            })
             setLoading(false);
         }
     }
 
+    async function onRegister() {
+        try {
+            setLoading(true);
+            await userService.registration(state);
+            await onSubmit()
+        } catch (e) {
+            toast({
+                status: 'error',
+                title: 'Ошибка аунтентификации',
+                description: e.response.data.message,
+                duration: 3000,
+                isClosable: true,
+            })
+            setLoading(false);
+        }
+    }
 
     function onChange(value) {
-        setSignInObject({
-            ...signInObject,
+        setState({
+            ...state,
             ...value
         })
     }
 
     return (
-        <AbsoluteCenter>
-            <VStack spacing={6}>
-                <Heading colorScheme='yellow'>Вход</Heading>
+        <Center minH='100vh'>
+            <Stack spacing={6} w='100%'>
+                <Heading textAlign='center'>Самокатим</Heading>
+                <Divider/>
                 <Skeleton isLoaded={!loading}>
-                    <Input
-                        value={signInObject.login}
-                        w='100%'
-                        onChange={event => onChange({login: event.target.value})}
-                        placeholder='+79871234568'
-                    />
-                </Skeleton>
-                <VStack w='75%' spacing={4}>
-                    <Button colorScheme='yellow'
+                    <InputGroup>
+                        <InputLeftAddon>
+                            <IoMdPhonePortrait/>
+                        </InputLeftAddon>
+                        <Input
+                            value={state.username}
+                            isInvalid={state.username !== '' && !isMobilePhone(state.username, 'ru-RU')}
                             w='100%'
-                            onClick={onSubmit}>
+                            onChange={event => onChange({
+                                username: event.target.value
+                            })}
+                            placeholder='+79871234568'
+                        />
+                    </InputGroup>
+                </Skeleton>
+                <Skeleton isLoaded={!loading}>
+                    <InputGroup>
+                        <InputLeftAddon>
+                            <IoMdKey/>
+                        </InputLeftAddon>
+                        <Input type={state.showPass ? 'text' : 'password'}
+                               isInvalid={state.password !== '' && state.password.length < 8}
+                               value={state.password}
+                               onChange={e => setState({...state, password: e.target.value})}
+                        />
+                        <InputRightElement>
+                            <IconButton aria-label='show password'
+                                        onClick={() => setState({...state, showPass: !state.showPass})}
+                                        icon={state.showPass ? <IoMdEye/> : <IoMdEyeOff/>}
+                            />
+                        </InputRightElement>
+                    </InputGroup>
+                </Skeleton>
+                <Stack spacing={3}>
+                    <Button onClick={onSubmit}
+                            isDisabled={!isMobilePhone(state.username, 'ru-RU')}
+                            colorScheme='green'>
                         Войти
                     </Button>
-                </VStack>
-            </VStack>
-        </AbsoluteCenter>
+                    <HStack justifyContent='center'>
+                        <Link onClick={onRegister}>
+                            Зарегистрировать
+                        </Link>
+                    </HStack>
+                </Stack>
+            </Stack>
+        </Center>
     )
-}
-
-function InternalLoginComponent(props) {
-
-
-
-    return (
-        <VStack spacing={5}>
-
-        </VStack>
-    );
 }

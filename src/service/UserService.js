@@ -13,7 +13,11 @@ class UserService {
 
     async signin(cred) {
         try {
-            let response = await $user_api.post(`/api/v1/auth`, cred);
+            let response = await $user_api.post(`/api/v1/auth`, {
+                username: cred.username,
+                password: cred.password,
+                roles: ['CLIENT']
+            });
             console.log(response)
             let data = response.data;
             this.token = data.accessToken;
@@ -22,6 +26,14 @@ class UserService {
         } catch (e) {
             throw e;
         }
+    }
+
+    async registration(cred) {
+        let response = await $user_api.post(`/api/v1/users`, {
+            username: cred.username,
+            password: cred.password
+        })
+        return response.data;
     }
 
     async signout() {
