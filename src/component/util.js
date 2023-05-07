@@ -1,39 +1,85 @@
-import React, {useEffect} from "react";
-import {Card, CardBody, Heading, HStack, IconButton, Skeleton, Tag, VStack} from "@chakra-ui/react";
-import {MdArrowBack} from "react-icons/md";
-import {useNavigate} from "react-router-dom";
+import React from "react";
 import moment from "moment";
-import {IoMdCash} from "react-icons/io";
+import {MdElectricBike, MdElectricScooter, MdPedalBike, MdTaxiAlert} from "react-icons/md";
+import {BsScooter} from "react-icons/bs";
 
-export function pageTitle(title) {
-    document.title = title
-}
-
-export function Header({title}) {
-    let navigate = useNavigate();
-
-    return (
-        <HStack justifyContent='start' w='100%' spacing={4}>
-            <IconButton icon={<MdArrowBack/>} aria-label={''} onClick={() => navigate(-1)} colorScheme='green'/>
-            <Heading>{title}</Heading>
-        </HStack>
-    );
-}
-
-export function beautifulRelativeDate(date) {
-    let mDate = moment(date);
-    return mDate.format('LLL')
-}
-
-export function NotContent() {
-    return (
-        <></>
-    )
-}
 
 export function toLastPoint(track) {
     if (track) {
         return track[track.length - 1];
     }
     return null;
+}
+
+export const RubleLogo = '₽';
+
+export const DEFAULT_EMAIL = "samokatim@internet.ru"
+
+
+export const DaysOfWeek = {
+    MONDAY: 'Понедельник',
+    TUESDAY: 'Вторник',
+    WEDNESDAY: 'Среда',
+    THURSDAY: 'Четверг',
+    FRIDAY: 'Пятница',
+    SATURDAY: 'Суббота',
+    SUNDAY: 'Воскресенье'
+}
+export const toDayName = (dayOfWeek) => {
+    switch (dayOfWeek) {
+        case 'MONDAY':
+            return 'Понедельник';
+        case 'TUESDAY':
+            return 'Вторник';
+        case 'WEDNESDAY':
+            return 'Среда';
+        case 'THURSDAY':
+            return 'Четверг';
+        case 'FRIDAY':
+            return 'Пятница';
+        case 'SATURDAY':
+            return 'Суббота';
+        case 'SUNDAY':
+            return 'Воскресенье';
+        default:
+            return undefined;
+    }
+}
+
+export const tariffUnit = {
+    MINUTE_BY_MINUTE: '₽/мин',
+    LONG_TERM: '₽/день',
+    TRAVEL_CARD: '₽/мес'
+}
+
+
+export const currentTimezone = () => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+export const toLocalTime = (value) => {
+    return moment(value, 'HH:mm:ss.SSSZ').tz(currentTimezone()).format('HH:mm')
+}
+
+export const toOffsetTime = (value) => {
+    return moment(value, 'HH:mm').tz(currentTimezone()).format('HH:mm:ss.SSSZ');
+}
+
+export const zIndexes = {
+    Background: -1,
+    Normal: 0,
+    Popover: 1200,
+    Profile: 1020
+}
+
+export function EquipmentLogo(props) {
+    if (props.type === 'BICYCLE')
+        return <MdPedalBike {...props}/>
+    if (props.type === 'BICYCLE_EL')
+        return <MdElectricBike {...props}/>
+    if (props.type === 'SCOOTER_EL')
+        return <MdElectricScooter {...props}/>
+    if (props.type === 'SCOOTER')
+        return <BsScooter {...props}/>
+    return <MdTaxiAlert {...props}/>
 }

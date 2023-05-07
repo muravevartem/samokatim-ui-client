@@ -1,5 +1,5 @@
-import {$user_api} from "../http.js";
 import {events, eventService} from "./EventService.js";
+import {$api} from "../http.js";
 
 
 class UserService {
@@ -13,10 +13,9 @@ class UserService {
 
     async signin(cred) {
         try {
-            let response = await $user_api.post(`/api/v1/auth`, {
+            let response = await $api.post(`/api/v1/auth`, {
                 username: cred.username,
-                password: cred.password,
-                roles: ['CLIENT']
+                password: cred.password
             });
             console.log(response)
             let data = response.data;
@@ -29,10 +28,14 @@ class UserService {
     }
 
     async registration(cred) {
-        let response = await $user_api.post(`/api/v1/users`, {
-            username: cred.username,
-            password: cred.password
+        let response = await $api.post(`/api/v1/clients`, {
+            email: cred.email,
         })
+        return response.data;
+    }
+
+    async resetPassword(cred) {
+        let response = await $api.put(`/api/v1/users/reset-password`, cred);
         return response.data;
     }
 
@@ -43,18 +46,22 @@ class UserService {
 
     authenticated() {
         console.log(this.token);
-        return this.token != null;
+        return this.token;
     }
 
     async me() {
-        let response = await $user_api.get(`/api/v1/users/me`);
+        let response = await $api.get(`/api/v1/clients/me`);
         return response.data;
     }
 
     async modify(fieldName, value) {
-        await $user_api.put(`/api/v1/users/me/${fieldName}`, {value: value});
+        await $api.put(`/api/v1/clients/me/${fieldName}`, {value: value});
     }
 
+    async completeInvite(id, body) {
+        let response = await $api.put(`/api/v1/user-invites/${id}`, body);
+        return response.data
+    }
 }
 
 export const userService = new UserService();

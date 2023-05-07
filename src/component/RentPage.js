@@ -1,22 +1,21 @@
-import React, {useEffect, useId, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {
     Alert,
     AlertIcon,
     Box,
     Center,
-    CircularProgress, Divider,
+    CircularProgress,
+    Divider,
     Heading,
-    HStack, IconButton,
-    Skeleton, Stack,
-    Tag, Text,
+    HStack,
+    IconButton,
+    Tag,
     VStack
 } from "@chakra-ui/react";
-import {Header, toLastPoint} from "./util";
-import {paymentService} from "../service/PaymentService";
-import {errorService} from "../service/ErrorService";
-import {MapContainer, Polygon, Polyline, TileLayer} from "react-leaflet";
-import {locations} from "../service/LocationService";
+import {toLastPoint} from "./util";
+import {rentService} from "../service/RentService.js";
+import {MapContainer, Polyline, TileLayer} from "react-leaflet";
 import {IoMdCash, IoMdTime} from "react-icons/io";
 import {MdArrowBack} from "react-icons/md";
 import moment from "moment";
@@ -32,7 +31,7 @@ export function RentPage() {
     async function loadRent() {
         try {
             setLoading(true);
-            let rent = await paymentService.getRent(rentId);
+            let rent = await rentService.getRent(rentId);
             setRent(rent);
         } catch (e) {
             navigate('/rents/error')

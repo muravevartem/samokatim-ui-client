@@ -1,37 +1,18 @@
 import React, {useEffect, useState} from "react";
-import {
-    Badge,
-    Box,
-    Button,
-    Card,
-    CardBody, Divider,
-    Grid,
-    GridItem,
-    Heading,
-    HStack, Skeleton,
-    Slide,
-    Spinner, Tag,
-    Text,
-    useDisclosure, useToast,
-    VStack
-} from "@chakra-ui/react";
+import {Button, Divider, Grid, GridItem, Heading, HStack, Skeleton, Tag, useToast, VStack} from "@chakra-ui/react";
 import {useNavigate} from "react-router-dom";
-import {Header, pageTitle} from "./util.js";
 import moment from "moment";
 import {equipmentIcons} from "../service/EquipmentService.js";
-import InfiniteScroll from "react-infinite-scroll-component";
-import {paymentService} from "../service/PaymentService";
+import {rentService} from "../service/RentService.js";
 import {errorService} from "../service/ErrorService";
-import {IoMdCash, IoMdTime} from "react-icons/io";
+import {IoMdCash} from "react-icons/io";
 
 export function ArchiveRentPage() {
-    pageTitle('Самокатим.История')
 
     return (
         <VStack alignItems='start'
                 w='100%'
                 padding={5}>
-            <Header title='История'/>
             <HistoricalOrderBlock/>
         </VStack>
     );
@@ -48,7 +29,7 @@ function HistoricalOrderBlock() {
             setLoading(true);
             const pageable = {page: data.page + 1, size: data.size, sort: 'id,desc', last: true};
             console.log(pageable);
-            let rents = await paymentService.getMyArchiveRents(pageable);
+            let rents = await rentService.getMyArchiveRents(pageable);
             setData({
                 content: [...data.content, ...rents.content],
                 page: rents.number,
@@ -106,8 +87,8 @@ function RentCard({rent}) {
                         <IoMdCash/>
                         <Tag>{rent.price ?? '1000'} P</Tag>
                     </HStack>
-                    
-                        
+
+
 
                 </VStack>
             </GridItem>

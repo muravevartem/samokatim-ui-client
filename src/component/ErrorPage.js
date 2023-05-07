@@ -1,7 +1,7 @@
 import React from "react";
 import {useNavigate, useRouteError} from "react-router-dom";
-import {Button, Center, Image, Link, Text, VStack} from "@chakra-ui/react";
-import {routes} from "../routers";
+import {Button, Center, Image, Text, VStack} from "@chakra-ui/react";
+import {routes} from "../routes.js";
 
 export function ErrorPage() {
     const error = useRouteError();

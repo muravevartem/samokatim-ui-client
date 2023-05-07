@@ -1,6 +1,6 @@
 import {MdElectricScooter, MdInfo, MdPedalBike} from "react-icons/md";
 import {events, eventService} from "./EventService.js";
-import {$handbook_api, $monitor_api} from "../http.js";
+import {$api} from "../http.js";
 
 export const equipmentIcons = {
     BICYCLE: ({size, color}) => <MdPedalBike size={size ? size : 48} color={color ? color : 'black'}/>,
@@ -16,7 +16,7 @@ export class EquipmentService {
     }
 
     async getPoints(data) {
-        let response = await $monitor_api.post(`/api/v1/geo-points?actual`, {
+        let response = await $api.post(`/api/v1/inventories/map-square`, {
             northEast: data.northEast,
             southWest: data.southWest
         });
@@ -25,7 +25,7 @@ export class EquipmentService {
     }
 
     async getOne(id) {
-        let response = await $handbook_api.get(`/api/v1/admin/equipments/${id}`);
+        let response = await $api.get(`/api/v1/inventories/${id}`);
         return response.data;
     }
 }

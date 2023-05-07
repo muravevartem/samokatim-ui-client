@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import {Header} from "./util.js";
 import {
     Alert,
     AlertIcon,
@@ -17,12 +16,12 @@ import {
     useToast,
     VStack
 } from "@chakra-ui/react";
-import {MdDelete, MdDone, MdEdit} from "react-icons/md";
+import {MdDone, MdEdit} from "react-icons/md";
 import {useNavigate} from "react-router-dom";
 import {userService} from "../service/UserService.js";
 import {AxiosError} from "axios";
 import validator from "validator/es";
-import {routes} from "../routers.js";
+import {routes} from "../routes.js";
 import {events, eventService} from "../service/EventService.js";
 
 export function ProfilePage() {
@@ -31,11 +30,16 @@ export function ProfilePage() {
     let [user, setUser] = useState({});
 
     let toast = useToast();
+    let navigate = useNavigate();
 
     async function loadUser() {
         try {
             setLoading(true);
-            setUser(await userService.me());
+            let currentUser = await userService.me();
+            setUser({
+                ...currentUser,
+                password: '*******'
+            });
         } catch (e) {
             toast({
                 status: 'error',
@@ -54,7 +58,6 @@ export function ProfilePage() {
 
     return (
         <VStack w='100%' p={5}>
-            <Header title='Профиль'/>
             <VStack divider={<Divider/>} maxW={768} w='100%'>
                 {(!loading && (!user.firstName || !user.lastName)) &&
                     <Alert status='warning'>
@@ -64,32 +67,32 @@ export function ProfilePage() {
                 }
                 <ProfileBlock user={user} loading={loading}/>
                 <ProfileInfo loaded={!loading}
-                             rewriteAll
+                             onChange={() => eventService.raise(events.updatedUserName)}
                              fieldName='firstname'
                              validate={value => !validator.isEmpty(value)}
                              beautifulName='Имя'
-                             v={user.firstName}/>
+                             v={user.firstName ?? ''}/>
                 <ProfileInfo loaded={!loading}
-                             rewriteAll
+                             onChange={() => eventService.raise(events.updatedUserName)}
                              fieldName='lastname'
                              validate={value => !validator.isEmpty(value)}
                              beautifulName='Фамилия'
-                             v={user.lastName}/>
+                             v={user.lastName ?? ''}/>
                 <ProfileInfo loaded={!loading}
-                             immutable
                              fieldName='tel'
-                             validate={value => !validator.isEmpty(value)}
+                             validate={value => validator.isMobilePhone(value, 'ru-RU')}
                              beautifulName='Номер телефона'
-                             v={user.tel}/>
+                             v={user.tel ?? ''}/>
                 <ProfileInfo beautifulName='Электронная почта'
                              fieldName='email'
+                             onChange={() => {
+                                 userService.signout();
+                                 navigate(routes.signIn)
+                             }}
                              validate={value => validator.isEmail(value)}
                              loaded={!loading}
                              type='email'
-                             v={user.email}/>
-                {/*<ProfileInfo fieldName='День рождения'*/}
-                {/*             type='date'*/}
-                {/*             value={moment().format('L')}/>*/}
+                             v={user.email ?? ''}/>
                 <NotificationInfo loading={loading}/>
                 <ButtonBlock/>
             </VStack>
@@ -113,7 +116,7 @@ function ProfileBlock({user, loading}) {
     )
 }
 
-function ProfileInfo({loaded, fieldName, beautifulName, v, immutable, type, validate, rewriteAll}) {
+function ProfileInfo({loaded, fieldName, beautifulName, v, immutable, type, validate, onChange}) {
     let toast = useToast();
     const [value, setValue] = useState('');
     const [editMode, setEditMode] = useState(false);
@@ -149,8 +152,8 @@ function ProfileInfo({loaded, fieldName, beautifulName, v, immutable, type, vali
                 isClosable: true
             })
             setEditMode(false)
-            if (rewriteAll)
-                eventService.raise(events.updatedUserName);
+            if (onChange)
+                onChange();
         } catch (e) {
             if (e instanceof AxiosError) {
                 toast({
@@ -171,7 +174,7 @@ function ProfileInfo({loaded, fieldName, beautifulName, v, immutable, type, vali
                 <Heading size='md'>{beautifulName}</Heading>
                 {!editMode &&
                     <Skeleton isLoaded={!loading}>
-                        <Text>{value}</Text>
+                        <Text>{type === 'password' ? '**********' : value}</Text>
                     </Skeleton>
                 }
                 {editMode &&
@@ -183,7 +186,7 @@ function ProfileInfo({loaded, fieldName, beautifulName, v, immutable, type, vali
             </Box>
             {!immutable &&
                 <IconButton aria-label='Edit'
-                            disabled={error}
+                            isDisabled={error}
                             colorScheme={error ? 'red' : 'gray'}
                             icon={editMode ? <MdDone/> : <MdEdit/>}
                             onClick={!error ? onChangeMode : e => {
@@ -210,7 +213,7 @@ function ButtonBlock({loading}) {
     async function signout() {
         try {
             await userService.signout();
-            navigate(routes.login);
+            navigate(routes.signIn);
         } catch (e) {
         }
     }
@@ -221,7 +224,7 @@ function ButtonBlock({loading}) {
                 <Skeleton isLoaded={!loading}>
                     <Button w='100%'
                             onClick={() => navigate(routes.archiveRents)}
-                            colorScheme='green'>
+                            colorScheme='brand'>
                         История поездок
                     </Button>
                 </Skeleton>
