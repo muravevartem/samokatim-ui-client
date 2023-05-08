@@ -12,6 +12,7 @@ export function toLastPoint(track) {
 }
 
 export const RubleLogo = '₽';
+export const BRAND_GRADIENT = "linear(to-l, #7928CA,#FF0080)";
 
 export const DEFAULT_EMAIL = "samokatim@internet.ru"
 

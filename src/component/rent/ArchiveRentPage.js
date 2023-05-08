@@ -1,11 +1,25 @@
 import React, {useEffect, useState} from "react";
-import {Button, Divider, Grid, GridItem, Heading, HStack, Skeleton, Tag, useToast, VStack} from "@chakra-ui/react";
+import {
+    Button,
+    Divider,
+    Grid,
+    GridItem,
+    Heading,
+    HStack,
+    Skeleton,
+    Stack,
+    Tag, Text,
+    useToast,
+    VStack
+} from "@chakra-ui/react";
 import {useNavigate} from "react-router-dom";
 import moment from "moment";
-import {equipmentIcons} from "../service/EquipmentService.js";
-import {rentService} from "../service/RentService.js";
-import {errorService} from "../service/ErrorService";
+import {equipmentIcons} from "../../service/EquipmentService.js";
+import {rentService} from "../../service/RentService.js";
+import {errorService} from "../../service/ErrorService.js";
 import {IoMdCash} from "react-icons/io";
+import {errorConverter} from "../../error/ErrorConverter.js";
+import {EquipmentLogo} from "../util.js";
 
 export function ArchiveRentPage() {
 
@@ -27,9 +41,9 @@ function HistoricalOrderBlock() {
     async function onLoad() {
         try {
             setLoading(true);
-            const pageable = {page: data.page + 1, size: data.size, sort: 'id,desc', last: true};
+            const pageable = {page: data.page + 1, size: data.size, sort: 'endTime,desc', last: true};
             console.log(pageable);
-            let rents = await rentService.getMyArchiveRents(pageable);
+            let rents = await rentService.getAll(pageable);
             setData({
                 content: [...data.content, ...rents.content],
                 page: rents.number,
@@ -37,10 +51,7 @@ function HistoricalOrderBlock() {
                 last: rents.last
             });
         } catch (e) {
-            toast({
-                status: 'error',
-                title: errorService.beautify(e)
-            })
+            toast(errorConverter.convertToToastBody(e))
         } finally {
             setLoading(false);
         }
@@ -51,18 +62,24 @@ function HistoricalOrderBlock() {
     }, [])
 
     return (
-        <VStack alignItems='center'
-                w='100%'
-                divider={<Divider/>}
-                spacing={4}
-                paddingY={10}>
-            {data.content.map(rent => <RentCard rent={rent} key={rent.id}/>)}
+        <Stack
+            w='100%'
+            spacing={4}
+            paddingY={10}>
+            <Text fontSize='4xl'
+                  fontWeight='extrabold'
+                  color='brand.600'>
+                Поездки
+            </Text>
+            <Stack divider={<Divider/>}>
+                {data.content.map(rent => <RentCard rent={rent} key={rent.id}/>)}
+            </Stack>
             {!data.last &&
                 <Skeleton isLoaded={!loading}>
                     <Button onClick={onLoad}>Показать ещё</Button>
                 </Skeleton>
             }
-        </VStack>
+        </Stack>
 
     )
 }
@@ -89,12 +106,11 @@ function RentCard({rent}) {
                     </HStack>
 
 
-
                 </VStack>
             </GridItem>
             <GridItem colStart={5} colEnd={5}>
                 <HStack justifyContent='end'>
-                    {equipmentIcons[rent.equipmentType] ? equipmentIcons[rent.equipmentType](iconParams) : equipmentIcons.UNKNOWN(iconParams)}
+                    <EquipmentLogo type={rent.inventory.model.type} size={48}/>
                 </HStack>
             </GridItem>
         </Grid>

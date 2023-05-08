@@ -1,12 +1,9 @@
-import {MdElectricScooter, MdInfo, MdPedalBike} from "react-icons/md";
+import {MdElectricBike, MdElectricScooter, MdInfo, MdPedalBike} from "react-icons/md";
 import {events, eventService} from "./EventService.js";
 import {$api} from "../http.js";
+import {BsScooter} from "react-icons/bs";
 
-export const equipmentIcons = {
-    BICYCLE: ({size, color}) => <MdPedalBike size={size ? size : 48} color={color ? color : 'black'}/>,
-    SCOOTER_EL: ({size, color}) => <MdElectricScooter size={size ? size : 48} color={color ? color : 'black'}/>,
-    UNKNOWN: ({size, color}) => <MdInfo size={size ? size : 48} color={color ? color : 'black'}/>
-}
+
 
 export class EquipmentService {
 

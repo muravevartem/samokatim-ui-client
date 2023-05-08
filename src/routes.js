@@ -1,9 +1,9 @@
 import {createBrowserRouter, createRoutesFromElements, Navigate, Route} from "react-router-dom";
 import {HomePage} from "./component/home/HomePage.js";
 import {Root} from "./component/Root";
-import {ArchiveRentPage} from "./component/ArchiveRentPage.js";
+import {ArchiveRentPage} from "./component/rent/ArchiveRentPage.js";
 import {ProfilePage} from "./component/ProfilePage.js";
-import {RentPage} from "./component/RentPage";
+import {RentPage} from "./component/rent/RentPage.js";
 import {ErrorRentPage} from "./component/ErrorPage";
 import {SecuredPage} from "./component/SecuredPage.js";
 import {SigInPage} from "./component/SigInPage.js";
