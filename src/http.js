@@ -21,7 +21,9 @@ let onRejectedResponse = function (error) {
 };
 
 let handbookApi = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: (process.env.NODE_ENV === 'development')
+        ? 'http://localhost:8080'
+        : 'https://api.1304294-cu57808.tw1.ru',
     withCredentials: true,
 });
 
