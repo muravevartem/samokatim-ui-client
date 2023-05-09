@@ -8,15 +8,14 @@ import {
     HStack,
     Skeleton,
     Stack,
-    Tag, Text,
+    Tag,
+    Text,
     useToast,
     VStack
 } from "@chakra-ui/react";
 import {useNavigate} from "react-router-dom";
 import moment from "moment";
-import {equipmentIcons} from "../../service/EquipmentService.js";
 import {rentService} from "../../service/RentService.js";
-import {errorService} from "../../service/ErrorService.js";
 import {IoMdCash} from "react-icons/io";
 import {errorConverter} from "../../error/ErrorConverter.js";
 import {EquipmentLogo} from "../util.js";
@@ -102,7 +101,7 @@ function RentCard({rent}) {
                     </Heading>
                     <HStack>
                         <IoMdCash/>
-                        <Tag>{rent.price ?? '1000'} P</Tag>
+                        <Tag>{rent?.cheque?.price?.toFixed(2) ?? '-'} ₽</Tag>
                     </HStack>
 
 

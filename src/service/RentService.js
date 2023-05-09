@@ -12,7 +12,7 @@ class RentService {
     }
 
     async getAll(pageable) {
-        const url = `/api/v1/rents?my&size=${pageable.size}&page=${pageable.page}`;
+        const url = `/api/v1/rents?my&size=${pageable.size}&page=${pageable.page}&sort=${pageable.sort}`;
         let axiosResponse = await $api.get(url);
         return axiosResponse.data;
     }

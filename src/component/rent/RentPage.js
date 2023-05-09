@@ -1,23 +1,9 @@
 import React, {useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
-import {
-    Alert,
-    AlertIcon,
-    Box,
-    Center,
-    CircularProgress,
-    Divider,
-    Heading,
-    HStack,
-    IconButton, Stack,
-    Tag, Text,
-    VStack
-} from "@chakra-ui/react";
+import {Box, Center, CircularProgress, Divider, HStack, Stack, Tag, Text, VStack} from "@chakra-ui/react";
 import {BRAND_GRADIENT, tariffUnit, toLastPoint} from "../util.js";
 import {rentService} from "../../service/RentService.js";
 import {MapContainer, Polyline, TileLayer} from "react-leaflet";
-import {IoMdCash, IoMdTime} from "react-icons/io";
-import {MdArrowBack} from "react-icons/md";
 import moment from "moment";
 
 export function RentPage() {
@@ -53,7 +39,7 @@ export function RentPage() {
 
     return (
         <VStack w='100%' alignItems='start'>
-            <Box h='50vh' w='100%'>
+            {rent.track && <Box h='50vh' w='100%'>
                 <MapContainer
                     zoomControl={false}
                     scrollWheelZoom={true}
@@ -67,7 +53,7 @@ export function RentPage() {
                     <Polyline pathOptions={{color: 'orange'}}
                               positions={(rent.track??[]).map(point => [point.lat, point.lng])}/>
                 </MapContainer>
-            </Box>
+            </Box>}
             <RentView rent={rent}/>
         </VStack>
     )
@@ -104,6 +90,19 @@ function RentView({rent}) {
                          p={2}
                          fontWeight='extrabold'>
                         {rent.tariff.price} {tariffUnit[rent.tariff.type]}
+                    </Tag>
+                </HStack>
+            </Stack>
+            <Stack>
+                <Text fontWeight='extrabold' size='2xl'>
+                    Стоимость
+                </Text>
+                <HStack>
+                    <Tag colorScheme='brand'
+                         size='xl'
+                         p={2}
+                         fontWeight='extrabold'>
+                        {rent?.cheque?.price?.toFixed(2)} ₽
                     </Tag>
                 </HStack>
             </Stack>
