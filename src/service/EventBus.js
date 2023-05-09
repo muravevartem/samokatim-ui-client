@@ -27,6 +27,9 @@ export const AppEvents = {
     LogOut: "LogOut",
     UnAuthorized: 'Unauthorized',
     MyLocated: 'MyLocated',
+    MoveToLocation: 'MoveToLocation',
     SelectedInventory: 'SelectedInventory',
-    SelectedRent: 'SelectedRent'
+    SelectedRent: 'SelectedRent',
+    SelectedOffice: 'SelectedOffice',
+    StartRent: 'StartRent'
 }

@@ -3,7 +3,7 @@ import {Avatar, HStack, IconButton, Stack} from "@chakra-ui/react";
 import {MapContainer, TileLayer} from "react-leaflet";
 import {ApplicationMarkers, Icons, LocationMarker} from "../MapComponents.js";
 import {zIndexes} from "../util.js";
-import {InventoryModal, RentModal} from "./HomeComponents.js";
+import {InventoryModal, OfficeModal, RentCounter, RentModal} from "./HomeComponents.js";
 import {useNavigate} from "react-router-dom";
 import {routes} from "../../routes.js";
 import {IoMdLocate} from "react-icons/io";
@@ -34,6 +34,7 @@ export function HomePage() {
             </MapContainer>
             <InventoryModal/>
             <RentModal/>
+            <OfficeModal/>
             <HStack position='fixed'
                     top={0}
                     left={0}
@@ -42,6 +43,7 @@ export function HomePage() {
                     zIndex={zIndexes.Profile}
                     p={3}>
                 <Avatar onClick={() => navigate(routes.profile)}/>
+                <RentCounter/>
             </HStack>
             <HStack position='fixed'
                     bottom={0}

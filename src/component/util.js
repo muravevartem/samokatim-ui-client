@@ -1,7 +1,7 @@
 import React from "react";
-import moment from "moment";
 import {MdElectricBike, MdElectricScooter, MdPedalBike, MdTaxiAlert} from "react-icons/md";
 import {BsScooter} from "react-icons/bs";
+import moment from 'moment-timezone';
 
 
 export function toLastPoint(track) {

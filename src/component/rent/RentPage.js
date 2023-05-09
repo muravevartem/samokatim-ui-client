@@ -1,6 +1,18 @@
 import React, {useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
-import {Box, Center, CircularProgress, Divider, HStack, Stack, Tag, Text, VStack} from "@chakra-ui/react";
+import {
+    Alert,
+    AlertIcon,
+    Box,
+    Center,
+    CircularProgress,
+    Divider,
+    HStack,
+    Stack,
+    Tag,
+    Text,
+    VStack
+} from "@chakra-ui/react";
 import {BRAND_GRADIENT, tariffUnit, toLastPoint} from "../util.js";
 import {rentService} from "../../service/RentService.js";
 import {MapContainer, Polyline, TileLayer} from "react-leaflet";
@@ -39,7 +51,13 @@ export function RentPage() {
 
     return (
         <VStack w='100%' alignItems='start'>
-            {rent.track && <Box h='50vh' w='100%'>
+            {!rent.inventory.supportsTelemetric &&
+                <Alert>
+                    <AlertIcon/>
+                    Инвентарь не поддерживает отправку телеметрии
+                </Alert>
+            }
+            {rent.inventory.supportsTelemetric && <Box h='50vh' w='100%'>
                 <MapContainer
                     zoomControl={false}
                     scrollWheelZoom={true}

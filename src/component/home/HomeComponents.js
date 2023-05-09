@@ -1,22 +1,30 @@
 import {
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogOverlay,
     Button,
     Center,
     CloseButton,
     Divider,
     HStack,
+    SimpleGrid,
     Slide,
     Stack,
     Tag,
     Text,
+    useDisclosure,
     useToast,
     VStack
 } from "@chakra-ui/react";
-import {EquipmentLogo, tariffUnit, zIndexes} from "../util.js";
+import {EquipmentLogo, tariffUnit, toDayName, toLocalTime, zIndexes} from "../util.js";
 import React, {useEffect, useState} from "react";
 import {AppEvents, eventBus} from "../../service/EventBus.js";
 import {errorConverter} from "../../error/ErrorConverter.js";
 import {rentService} from "../../service/RentService.js";
 import moment from "moment";
+import {FaParking} from "react-icons/fa";
 
 export function InventoryModal() {
     const [inventory, setInventory] = useState();
@@ -213,3 +221,169 @@ export function RentModal() {
     )
 }
 
+export function OfficeModal() {
+    const [office, setOffice] = useState();
+    const [loading, setLoading] = useState(false);
+    let toast = useToast();
+
+    function onSelectInventory(inventory) {
+        setOffice(undefined);
+        eventBus.raise(AppEvents.SelectedInventory, inventory)
+    }
+
+
+    useEffect(() => {
+        let onSelectedOffice = eventBus.on(AppEvents.SelectedOffice, data => setOffice(data));
+        return () => {
+            onSelectedOffice()
+        }
+    }, [])
+
+
+    return (
+        <Slide in={office} style={{zIndex: zIndexes.Popover}} direction='bottom'>
+            <Stack p={3}
+                   backdropFilter='blur(10px)'
+                   spacing={4}
+                   divider={<Divider/>}
+                   w='100%'
+                   bgColor='whiteAlpha.700'
+                   zIndex={zIndexes.Popover}>
+                <HStack justifyContent='space-between'>
+                    <HStack>
+                        <Center bgGradient="linear(to-l, #7928CA,#FF0080)" p={2} rounded={10}>
+                            <FaParking size={32} color='white'/>
+                        </Center>
+
+                        <Text bgGradient="linear(to-l, #7928CA,#FF0080)"
+                              bgClip='text'
+                              fontSize="4xl"
+                              textAlign='start'
+                              fontWeight="extrabold">
+                            {office?.alias}
+                        </Text>
+                    </HStack>
+                    <CloseButton onClick={() => setOffice(undefined)}/>
+                </HStack>
+                <VStack w='100' divider={<Divider/>}>
+                    <VStack fontWeight='extrabold'>
+                        <Text color='brand.800'>Режим работы</Text>
+                        <Stack>
+                            {(office?.schedules ?? []).map(schedule => {
+                                    if (schedule.dayOff)
+                                        return (
+                                            <SimpleGrid columns={2}>
+                                                <Tag>{toDayName(schedule.day)}</Tag>
+                                                <Text>Выходной</Text>
+                                            </SimpleGrid>
+                                        )
+                                    return (
+                                        <SimpleGrid columns={2}>
+                                            <Tag>{toDayName(schedule.day)}</Tag>
+                                            <HStack>
+                                                <Text>{toLocalTime(schedule.start)}</Text>
+                                                <Text>-</Text>
+                                                <Text>{toLocalTime(schedule.end)}</Text>
+                                            </HStack>
+                                        </SimpleGrid>
+                                    )
+                                }
+                            )}
+                        </Stack>
+                    </VStack>
+                    <VStack fontWeight='extrabold' w='100%'>
+                        {office?.inventories?.map(inventory => (
+                            <HStack bgColor='white'
+                                    p={3}
+                                    rounded={10}
+                                    onClick={() => onSelectInventory(inventory)}>
+                                <Stack px={2}>
+                                    <Text fontSize='xl' color='brand.600'>
+                                        {inventory.alias}
+                                    </Text>
+                                    <Text>
+                                        {inventory.model.name}
+                                    </Text>
+                                </Stack>
+                                <EquipmentLogo type={inventory.model.type} size={32}/>
+                            </HStack>
+                        ))}
+                    </VStack>
+                </VStack>
+            </Stack>
+        </Slide>
+    )
+}
+
+export function RentCounter() {
+    let {isOpen, onClose, onOpen, onToggle} = useDisclosure();
+    const [rents, setRents] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    let toast = useToast();
+
+
+    async function load() {
+        try {
+            setLoading(true)
+            let loadedRents = await rentService.getActiveRents();
+            setRents(loadedRents)
+        } catch (e) {
+            toast(errorConverter.convertToToastBody(e))
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    function onClick(rent) {
+       onClose();
+       eventBus.raise(AppEvents.SelectedRent, rent)
+    }
+
+    useEffect(() => {
+        load()
+        let onStartRent = eventBus.on(AppEvents.StartRent, load);
+        return () => {
+            onStartRent()
+        }
+    }, [])
+
+    return (
+        <>
+            {rents.length > 0 &&
+                <Button onClick={onOpen} colorScheme='brand'>
+                    В аренде
+                </Button>
+            }
+            <AlertDialog
+                isOpen={isOpen}
+                onClose={onClose}
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                            <HStack justifyContent='space-between'>
+                                <Text>Инвентарь</Text>
+                                <CloseButton onClick={onClose}/>
+                            </HStack>
+                        </AlertDialogHeader>
+                        <AlertDialogBody>
+                            <Stack divider={<Divider/>} p={2}>
+                                {rents?.map(rent => (
+                                    <VStack onClick={() => onClick(rent)}>
+                                        <Text fontSize='xl' fontWeight='extrabold'>
+                                            Аренда #{rent.id}
+                                        </Text>
+                                        <Tag>
+                                            {moment(rent.startTime).format('lll')}
+                                        </Tag>
+                                    </VStack>
+                                ))}
+                            </Stack>
+                        </AlertDialogBody>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
+        </>
+    )
+}

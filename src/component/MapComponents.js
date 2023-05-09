@@ -18,6 +18,10 @@ export const Icons = {
     ME_ICON: new L.Icon({
         iconUrl: '/icons/My-location.png',
         iconSize: new L.Point(24, 24)
+    }),
+    PARKING_ICON: new L.Icon({
+        iconUrl: '/icons/Parking.png',
+        iconSize: new L.Point(32,32)
     })
 
 }
@@ -107,6 +111,16 @@ export function ApplicationMarkers() {
                             }
                         }}
                         position={[rent.inventory.lastMonitoringRecord.lat, rent.inventory.lastMonitoringRecord.lng]}/>
+            )}
+            {(state.offices ?? []).map(office =>
+                <Marker icon={Icons.PARKING_ICON}
+                        key={'office' + office.id}
+                        eventHandlers={{
+                            click() {
+                                eventBus.raise(AppEvents.SelectedOffice, office)
+                            }
+                        }}
+                        position={[office.lat, office.lng]}/>
             )}
         </>
     )

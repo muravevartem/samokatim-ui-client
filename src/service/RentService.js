@@ -21,6 +21,11 @@ class RentService {
         let axiosResponse = await $api.get(`/api/v1/rents/${rentId}`);
         return axiosResponse.data;
     }
+
+    async getActiveRents() {
+        let axiosResponse = await $api.get(`/api/v1/rents?my&active`);
+        return axiosResponse.data;
+    }
 }
 
 export const rentService = new RentService();
