@@ -51,7 +51,7 @@ export function RentPage() {
 
     return (
         <VStack w='100%' alignItems='start'>
-            {!rent.inventory.supportsTelemetric &&
+            {!rent.inventory &&
                 <Alert>
                     <AlertIcon/>
                     Инвентарь не поддерживает отправку телеметрии
