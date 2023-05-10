@@ -57,7 +57,7 @@ export function RentPage() {
                     Инвентарь не поддерживает отправку телеметрии
                 </Alert>
             }
-            {rent.inventory.supportsTelemetric && <Box h='50vh' w='100%'>
+            {rent.inventory && <Box h='50vh' w='100%'>
                 <MapContainer
                     zoomControl={false}
                     scrollWheelZoom={true}
