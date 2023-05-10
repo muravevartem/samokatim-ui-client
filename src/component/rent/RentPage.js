@@ -68,7 +68,7 @@ export function RentPage() {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <Polyline pathOptions={{color: 'orange'}}
+                    <Polyline pathOptions={{color: 'indigo', weight: 5}}
                               positions={(rent.track??[]).map(point => [point.lat, point.lng])}/>
                 </MapContainer>
             </Box>}
