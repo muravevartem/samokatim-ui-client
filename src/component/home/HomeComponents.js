@@ -25,6 +25,7 @@ import {errorConverter} from "../../error/ErrorConverter.js";
 import {rentService} from "../../service/RentService.js";
 import moment from "moment";
 import {FaParking} from "react-icons/fa";
+import {useNavigate} from "react-router-dom";
 
 export function InventoryModal() {
     const [inventory, setInventory] = useState();
@@ -130,6 +131,7 @@ export function RentModal() {
     const [loading, setLoading] = useState(false);
     let toast = useToast();
 
+    let navigate = useNavigate();
     async function stopRent() {
         try {
             setLoading(true);
@@ -140,6 +142,7 @@ export function RentModal() {
                 description: `${moment(obj.endTime).diff(moment(obj.startTime), 'minutes')} мин`
             })
             setRent(undefined)
+            window.location.href = obj.confirmationUrl;
         } catch (e) {
             toast(errorConverter.convertToToastBody(e))
         } finally {
