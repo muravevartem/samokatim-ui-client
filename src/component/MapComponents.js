@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from "react";
 import {Marker, Tooltip, useMap} from "react-leaflet";
 import L from 'leaflet';
-import {useToast} from "@chakra-ui/react";
+import {Text, useToast} from "@chakra-ui/react";
 import {errorConverter} from "../error/ErrorConverter.js";
 import {mapService} from "../service/MapService.js";
 import {AppEvents, eventBus} from "../service/EventBus.js";
+import {tariffUnit} from "./util.js";
 
 export const Icons = {
     INVENTORY_ICON: new L.Icon({
@@ -101,9 +102,13 @@ export function ApplicationMarkers() {
                             }
                         }}
                         position={[m.lastMonitoringRecord.lat, m.lastMonitoringRecord.lng]}>
-                    <Tooltip direction="top" offset={[0, 20]} opacity={1} permanent>
-                        {Math.min((m.tariffs).map(x=>x.price))}
-                    </Tooltip>
+                    {(m.tariffs.length > 0 && map.getZoom() > 15) &&
+                        <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent>
+                            <Text fontWeight='bold'>
+                                От {(m.tariffs[0])?.price} {tariffUnit[m.tariffs[0]?.type]}
+                            </Text>
+                        </Tooltip>
+                    }
                 </Marker>
             )}
             {(state.rented ?? []).map(rent =>
