@@ -51,13 +51,15 @@ export function RentPage() {
 
     return (
         <VStack w='100%' alignItems='start'>
-            {!rent.inventory &&
-                <Alert>
-                    <AlertIcon/>
-                    Инвентарь не поддерживает отправку телеметрии
-                </Alert>
+            {(!rent.track || rent.track.length === 0) &&
+                <VStack w='100%' alignItems='center' p={2}>
+                    <Alert status='warning'>
+                        <AlertIcon/>
+                        Перемещение не зафиксировано
+                    </Alert>
+                </VStack>
             }
-            {rent.inventory && <Box h='50vh' w='100%'>
+            {(rent.track && rent.track.length > 0) && <Box h='50vh' w='100%'>
                 <MapContainer
                     zoomControl={false}
                     scrollWheelZoom={true}
