@@ -98,7 +98,7 @@ export function ConfirmationUserPage() {
                             </PinInput>
                         </HStack>
                     </FormControl>
-                    <Collapse in={state.code.length === 8} animateOpacity>
+                    <Collapse in={state.code.length === 6} animateOpacity>
                         <Stack w='100%'>
                             <FormControl>
                                 <FormLabel>
