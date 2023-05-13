@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Marker, useMap} from "react-leaflet";
+import {Marker, Tooltip, useMap} from "react-leaflet";
 import L from 'leaflet';
 import {useToast} from "@chakra-ui/react";
 import {errorConverter} from "../error/ErrorConverter.js";
@@ -100,7 +100,11 @@ export function ApplicationMarkers() {
                                 eventBus.raise(AppEvents.SelectedInventory, m)
                             }
                         }}
-                        position={[m.lastMonitoringRecord.lat, m.lastMonitoringRecord.lng]}/>
+                        position={[m.lastMonitoringRecord.lat, m.lastMonitoringRecord.lng]}>
+                    <Tooltip direction="top" offset={[0, 20]} opacity={1} permanent>
+                        {Math.min((m.tariffs).map(x=>x.price))}
+                    </Tooltip>
+                </Marker>
             )}
             {(state.rented ?? []).map(rent =>
                 <Marker icon={Icons.RENTED_INVENTORY_ICON}

@@ -44,7 +44,7 @@ export function InventoryModal() {
                 title: 'Аренда начата'
             })
             setInventory(undefined)
-            eventBus.raise(AppEvents.SelectedRent, obj)
+            window.location.href = obj.confirmationUrl;
         } catch (e) {
             toast(errorConverter.convertToToastBody(e))
         } finally {
