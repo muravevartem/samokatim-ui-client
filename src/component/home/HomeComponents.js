@@ -37,6 +37,8 @@ import {FaParking} from "react-icons/fa";
 import {useNavigate} from "react-router-dom";
 import {fileService} from "../../service/FileService.js";
 import {IoMdQrScanner} from "react-icons/io";
+import {MdBikeScooter} from "react-icons/md";
+import {FcStart} from "react-icons/fc";
 
 export function InventoryModal() {
     const [inventory, setInventory] = useState();
@@ -82,7 +84,7 @@ export function InventoryModal() {
                     <ModalCloseButton/>
                     <ModalBody>
                         <Text>
-                            Для подтверждждение аренды нужно заплатить депозит.
+                            Для подтверждждение аренды нужно оплатить депозит.
                             Будет списано <Badge>{selectedTariff?.deposit} ₽</Badge>.
                             После успешного окончания аренды депозит будет возвращен
                         </Text>
@@ -191,6 +193,8 @@ export function RentModal() {
         }
     }, [])
 
+    if (!rent)
+        return null;
 
     return (
         <Slide in={rent} style={{zIndex: zIndexes.Popover}} direction='bottom'>
@@ -207,29 +211,29 @@ export function RentModal() {
                             <EquipmentLogo type={rent?.inventory?.model?.type} size={32} color='white'/>
                         </Center>
 
-                        <Text bgGradient="linear(to-l, #7928CA,#FF0080)"
-                              bgClip='text'
-                              fontSize="4xl"
-                              textAlign='start'
-                              fontWeight="extrabold">
-                            {rent?.inventory?.alias}
-                        </Text>
+                        <Stack spacing={0}>
+                            <Text color='brand.600'
+                                  fontSize="2xl"
+                                  textAlign='start'
+                                  fontWeight="extrabold">
+                                {rent?.inventory?.model?.name}
+                            </Text>
+                            <HStack spacing={1}>
+                                <IoMdQrScanner/>
+                                <Text fontSize="md"
+                                      textAlign='start'>
+                                    {rent?.inventory?.alias}
+                                </Text>
+                            </HStack>
+                        </Stack>
                     </HStack>
                     <CloseButton onClick={() => setRent(undefined)}/>
                 </HStack>
+                <HStack>
+                    <Image src={fileService.url(rent?.inventory?.organization?.logo)} rounded='50%' boxSize={14}/>
+                    <Text color='brand.600' fontWeight='bold'>{rent?.inventory?.organization?.name}</Text>
+                </HStack>
                 <VStack w='100%' alignItems='start' divider={<Divider/>}>
-                    <Stack fontWeight='extrabold'>
-                        <Text color='brand.800'>Модель</Text>
-                        <HStack px={2}>
-                            <Tag colorScheme='brand'>{rent?.inventory?.model?.name}</Tag>
-                        </HStack>
-                    </Stack>
-                    <Stack fontWeight='extrabold'>
-                        <Text color='brand.800'>Владелец</Text>
-                        <HStack px={2}>
-                            <Tag colorScheme='brand'>{rent?.inventory?.organization?.name}</Tag>
-                        </HStack>
-                    </Stack>
                     <Stack fontWeight='extrabold'>
                         <Text color='brand.800'>Начало аренды</Text>
                         <HStack px={2}>
@@ -241,7 +245,7 @@ export function RentModal() {
                         <HStack px={2}>
                             <Tag colorScheme="brand">{rent?.tariff?.alias}</Tag>
                             <Tag colorScheme='brand'>
-                                {rent?.tariff?.deposit} ₽ + {rent?.tariff?.price} {tariffUnit[rent?.tariff?.type]}
+                                {rent?.tariff?.initialPrice} ₽ + {rent?.tariff?.price} {tariffUnit[rent?.tariff?.type]}
                             </Tag>
                         </HStack>
                     </Stack>
@@ -363,6 +367,7 @@ export function RentCounter() {
     let {isOpen, onClose, onOpen, onToggle} = useDisclosure();
     const [rents, setRents] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [showNewMessage, setShowNewMessage] = useState(false);
 
     let toast = useToast();
 
@@ -371,6 +376,9 @@ export function RentCounter() {
         try {
             setLoading(true)
             let loadedRents = await rentService.getActiveRents();
+            if (rents.length < loadedRents.length) {
+                setShowNewMessage(true);
+            }
             setRents(loadedRents)
         } catch (e) {
             toast(errorConverter.convertToToastBody(e))
@@ -386,9 +394,9 @@ export function RentCounter() {
 
     useEffect(() => {
         load()
-        let onStartRent = eventBus.on(AppEvents.StartRent, load);
+        let interval = setInterval(load, 5000);
         return () => {
-            onStartRent()
+            clearInterval(interval);
         }
     }, [])
 
@@ -396,9 +404,13 @@ export function RentCounter() {
         <>
             {rents.length > 0 &&
                 <Button onClick={onOpen} colorScheme='brand'>
-                    В аренде
+                    <HStack>
+                        <MdBikeScooter/>
+                        <Text>{rents.length}</Text>
+                    </HStack>
                 </Button>
             }
+
             <AlertDialog
                 isOpen={isOpen}
                 onClose={onClose}
@@ -407,7 +419,7 @@ export function RentCounter() {
                     <AlertDialogContent>
                         <AlertDialogHeader fontSize='lg' fontWeight='bold'>
                             <HStack justifyContent='space-between'>
-                                <Text>Инвентарь</Text>
+                                <Text>В аренде</Text>
                                 <CloseButton onClick={onClose}/>
                             </HStack>
                         </AlertDialogHeader>
@@ -415,12 +427,32 @@ export function RentCounter() {
                             <Stack divider={<Divider/>} p={2}>
                                 {rents?.map(rent => (
                                     <VStack onClick={() => onClick(rent)}>
-                                        <Text fontSize='xl' fontWeight='extrabold'>
-                                            Аренда #{rent.id}
-                                        </Text>
-                                        <Tag>
-                                            {moment(rent.startTime).format('lll')}
-                                        </Tag>
+                                        <HStack>
+                                            <Center bgGradient="linear(to-l, #7928CA,#FF0080)" p={2} rounded={10}>
+                                                <EquipmentLogo type={rent?.inventory?.model?.type} size={32} color='white'/>
+                                            </Center>
+                                            <Stack spacing={0}>
+                                                <Text color='brand.600'
+                                                      fontSize="2xl"
+                                                      textAlign='start'
+                                                      fontWeight="extrabold">
+                                                    {rent?.inventory?.model?.name}
+                                                </Text>
+                                                <HStack spacing={1}>
+                                                    <IoMdQrScanner/>
+                                                    <Text fontSize="md"
+                                                          textAlign='start'>
+                                                        {rent?.inventory?.alias}
+                                                    </Text>
+                                                </HStack>
+                                                <HStack>
+                                                    <FcStart/>
+                                                    <Tag>
+                                                        {moment(rent.startTime).format('lll')}
+                                                    </Tag>
+                                                </HStack>
+                                            </Stack>
+                                        </HStack>
                                     </VStack>
                                 ))}
                             </Stack>
