@@ -4,11 +4,20 @@ import {
     AlertDialogContent,
     AlertDialogHeader,
     AlertDialogOverlay,
+    Badge,
     Button,
     Center,
     CloseButton,
     Divider,
     HStack,
+    Image,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
     SimpleGrid,
     Slide,
     Stack,
@@ -26,10 +35,14 @@ import {rentService} from "../../service/RentService.js";
 import moment from "moment";
 import {FaParking} from "react-icons/fa";
 import {useNavigate} from "react-router-dom";
+import {fileService} from "../../service/FileService.js";
+import {IoMdQrScanner} from "react-icons/io";
 
 export function InventoryModal() {
     const [inventory, setInventory] = useState();
+    const [selectedTariff, setSelectedTariff] = useState();
     const [loading, setLoading] = useState(false);
+    let {isOpen, onOpen, onClose} = useDisclosure();
     let toast = useToast();
 
     async function startRent(tariff) {
@@ -39,10 +52,6 @@ export function InventoryModal() {
                 inventoryId: inventory.id,
                 tariffId: tariff.id
             });
-            toast({
-                status: 'info',
-                title: 'Аренда начата'
-            })
             setInventory(undefined)
             window.location.href = obj.confirmationUrl;
         } catch (e) {
@@ -59,9 +68,31 @@ export function InventoryModal() {
         }
     }, [])
 
+    if (!inventory) {
+        return null;
+    }
+
 
     return (
         <Slide in={inventory} style={{zIndex: zIndexes.Popover}} direction='bottom'>
+            <Modal isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay/>
+                <ModalContent>
+                    <ModalHeader>Подтверждение аренды</ModalHeader>
+                    <ModalCloseButton/>
+                    <ModalBody>
+                        <Text>
+                            Для подтверждждение аренды нужно заплатить депозит.
+                            Будет списано <Badge>{selectedTariff?.deposit} ₽</Badge>.
+                            После успешного окончания аренды депозит будет возвращен
+                        </Text>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button onClick={onClose}>Отмена</Button>
+                        <Button colorScheme='brand' onClick={() => startRent(selectedTariff)}>Перейти к оплате</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
             <Stack p={3}
                    backdropFilter='blur(10px)'
                    spacing={4}
@@ -75,30 +106,28 @@ export function InventoryModal() {
                             <EquipmentLogo type={inventory?.model?.type} size={32} color='white'/>
                         </Center>
 
-                        <Text bgGradient="linear(to-l, #7928CA,#FF0080)"
-                              bgClip='text'
-                              fontSize="4xl"
-                              textAlign='start'
-                              fontWeight="extrabold">
-                            {inventory?.alias}
-                        </Text>
+                        <Stack spacing={0}>
+                            <Text color='brand.600'
+                                fontSize="2xl"
+                                textAlign='start'
+                                fontWeight="extrabold">
+                                {inventory?.model?.name}
+                            </Text>
+                            <HStack spacing={1}>
+                                <IoMdQrScanner/>
+                                <Text fontSize="md"
+                                      textAlign='start'>
+                                    {inventory?.alias}
+                                </Text>
+                            </HStack>
+                        </Stack>
                     </HStack>
                     <CloseButton onClick={() => setInventory(undefined)}/>
                 </HStack>
-                <VStack w='100%' alignItems='start'>
-                    <Stack fontWeight='extrabold'>
-                        <Text color='brand.800'>Модель</Text>
-                        <HStack px={2}>
-                            <Tag colorScheme='brand'>{inventory?.model?.name}</Tag>
-                        </HStack>
-                    </Stack>
-                    <Stack fontWeight='extrabold'>
-                        <Text color='brand.800'>Владелец</Text>
-                        <HStack px={2}>
-                            <Tag colorScheme='brand'>{inventory?.organization?.name}</Tag>
-                        </HStack>
-                    </Stack>
-                </VStack>
+                <HStack>
+                    <Image src={fileService.url(inventory?.organization?.logo)} rounded='50%' boxSize={14}/>
+                    <Text color='brand.600' fontWeight='bold'>{inventory?.organization?.name}</Text>
+                </HStack>
                 <HStack overflowX='auto'>
                     {inventory?.tariffs?.map(item => (
                         <Stack key={item?.id}
@@ -106,7 +135,10 @@ export function InventoryModal() {
                                cursor='pointer'
                                rounded={10}
                                p={2}
-                               onClick={() => startRent(item)}
+                               onClick={() => {
+                                   setSelectedTariff(item);
+                                   onOpen();
+                               }}
                                w='max-content'>
                             <Stack spacing={0}>
                                 <Text color='white'
@@ -115,7 +147,7 @@ export function InventoryModal() {
                                 </Text>
                                 <Text color='lightgray'
                                       fontWeight='bolder'>
-                                    {item?.price} {tariffUnit[item?.type]}
+                                    {item?.initialPrice ? item.initialPrice + ' ₽ + ' : ''}{item?.price} {tariffUnit[item?.type]}
                                 </Text>
                             </Stack>
                         </Stack>
@@ -132,6 +164,7 @@ export function RentModal() {
     let toast = useToast();
 
     let navigate = useNavigate();
+
     async function stopRent() {
         try {
             setLoading(true);
@@ -207,7 +240,15 @@ export function RentModal() {
                         <Text color='brand.800'>Тариф</Text>
                         <HStack px={2}>
                             <Tag colorScheme="brand">{rent?.tariff?.alias}</Tag>
-                            <Tag colorScheme='brand'>{rent?.tariff?.price} {tariffUnit[rent?.tariff?.type]}</Tag>
+                            <Tag colorScheme='brand'>
+                                {rent?.tariff?.deposit} ₽ + {rent?.tariff?.price} {tariffUnit[rent?.tariff?.type]}
+                            </Tag>
+                        </HStack>
+                    </Stack>
+                    <Stack fontWeight='extrabold'>
+                        <Text color='brand.800'>Депозит</Text>
+                        <HStack px={2}>
+                            <Tag colorScheme="brand">{rent?.tariff?.deposit} ₽</Tag>
                         </HStack>
                     </Stack>
                     <HStack justifyContent='center' w='100%'>
@@ -339,8 +380,8 @@ export function RentCounter() {
     }
 
     function onClick(rent) {
-       onClose();
-       eventBus.raise(AppEvents.SelectedRent, rent)
+        onClose();
+        eventBus.raise(AppEvents.SelectedRent, rent)
     }
 
     useEffect(() => {
