@@ -11,6 +11,11 @@ class RentService {
         return axiosResponse.data;
     }
 
+    async repay(rentId) {
+        let axiosResponse = await $api.put(`/api/v1/rents/${rentId}/repay`);
+        return axiosResponse.data;
+    }
+
     async getAll(pageable) {
         const url = `/api/v1/rents?my&size=${pageable.size}&page=${pageable.page}&sort=${pageable.sort}`;
         let axiosResponse = await $api.get(url);
@@ -26,6 +31,7 @@ class RentService {
         let axiosResponse = await $api.get(`/api/v1/rents?my&active`);
         return axiosResponse.data;
     }
+
 }
 
 export const rentService = new RentService();

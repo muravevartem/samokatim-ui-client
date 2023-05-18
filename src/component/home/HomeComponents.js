@@ -255,14 +255,16 @@ export function RentModal() {
                             <Tag colorScheme="brand">{rent?.tariff?.deposit} ₽</Tag>
                         </HStack>
                     </Stack>
-                    <HStack justifyContent='center' w='100%'>
-                        <Button w={250}
-                                isDisabled={loading}
-                                onClick={stopRent}
-                                colorScheme='brand'>
-                            Завершить
-                        </Button>
-                    </HStack>
+                    {rent.status === 'ACTIVE' &&
+                        <HStack justifyContent='center' w='100%'>
+                            <Button w={250}
+                                    isDisabled={loading}
+                                    onClick={stopRent}
+                                    colorScheme='brand'>
+                                Завершить
+                            </Button>
+                        </HStack>
+                    }
                 </VStack>
             </Stack>
         </Slide>

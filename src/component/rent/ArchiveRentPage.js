@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {
+    Badge,
     Button,
     Divider,
     Grid,
@@ -37,6 +38,15 @@ function HistoricalOrderBlock() {
 
     const toast = useToast();
 
+    async function repay(rent) {
+        try {
+            let paymentOpt = await rentService.repay(rent.id);
+            document.location.href = paymentOpt.confirmationUrl;
+        } catch (e) {
+            toast(errorConverter.convertToToastBody(e))
+        }
+    }
+
     async function onLoad() {
         try {
             setLoading(true);
@@ -71,7 +81,7 @@ function HistoricalOrderBlock() {
                 Поездки
             </Text>
             <Stack divider={<Divider/>}>
-                {data.content.map(rent => <RentCard rent={rent} key={rent.id}/>)}
+                {data.content.map(rent => <RentCard rent={rent} key={rent.id} onRetry={() => repay(rent)}/>)}
             </Stack>
             {!data.last &&
                 <Skeleton isLoaded={!loading}>
@@ -83,7 +93,7 @@ function HistoricalOrderBlock() {
     )
 }
 
-function RentCard({rent}) {
+function RentCard({rent, onRetry}) {
     let navigate = useNavigate();
     let iconParams = {size: 48, color: 'black'};
     return (
@@ -95,6 +105,9 @@ function RentCard({rent}) {
                 <VStack alignItems='start'>
                     <Heading size='md'>
                         Аренда #{rent.id}
+                        {rent.cheque.status !== 'COMPLETED' &&
+                            <Badge>Не оплачено</Badge>
+                        }
                     </Heading>
                     <Heading size='md'>
                         {moment(rent.startTime).format('lll')}
@@ -103,8 +116,13 @@ function RentCard({rent}) {
                         <IoMdCash/>
                         <Tag>{rent?.cheque?.price?.toFixed(2) ?? '-'} ₽</Tag>
                     </HStack>
-
-
+                    {rent.cheque.status !== 'COMPLETED' &&
+                        <Button size='sm'
+                                onClick={onRetry}
+                                colorScheme='brand'>
+                            Повторить оплату
+                        </Button>
+                    }
                 </VStack>
             </GridItem>
             <GridItem colStart={5} colEnd={5}>
