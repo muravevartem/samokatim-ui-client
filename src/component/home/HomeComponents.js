@@ -27,7 +27,7 @@ import {
     useToast,
     VStack
 } from "@chakra-ui/react";
-import {EquipmentLogo, tariffUnit, toDayName, toLocalTime, zIndexes} from "../util.js";
+import {EquipmentLogo, ShortDaysOfWeek, tariffUnit, toDayName, toLocalTime, zIndexes} from "../util.js";
 import React, {useEffect, useState} from "react";
 import {AppEvents, eventBus} from "../../service/EventBus.js";
 import {errorConverter} from "../../error/ErrorConverter.js";
@@ -36,7 +36,7 @@ import moment from "moment";
 import {FaParking} from "react-icons/fa";
 import {useNavigate} from "react-router-dom";
 import {fileService} from "../../service/FileService.js";
-import {IoMdQrScanner} from "react-icons/io";
+import {IoMdInformation, IoMdInformationCircle, IoMdQrScanner} from "react-icons/io";
 import {MdBikeScooter} from "react-icons/md";
 import {FcStart} from "react-icons/fc";
 
@@ -110,9 +110,9 @@ export function InventoryModal() {
 
                         <Stack spacing={0}>
                             <Text color='brand.600'
-                                fontSize="2xl"
-                                textAlign='start'
-                                fontWeight="extrabold">
+                                  fontSize="2xl"
+                                  textAlign='start'
+                                  fontWeight="extrabold">
                                 {inventory?.model?.name}
                             </Text>
                             <HStack spacing={1}>
@@ -130,6 +130,24 @@ export function InventoryModal() {
                     <Image src={fileService.url(inventory?.organization?.logo)} rounded='50%' boxSize={14}/>
                     <Text color='brand.600' fontWeight='bold'>{inventory?.organization?.name}</Text>
                 </HStack>
+                {!inventory.supportsTelemetry &&
+                    <HStack alignItems='start' spacing={1}>
+                        <IoMdInformationCircle size='48' color='pink'/>
+                        <Stack p={1} spacing={0}>
+                            <Text color='brand.600'
+                                  p={2}
+                                  fontWeight='extrabold'>
+                                Оборудование не поддерживает отслеживание
+                            </Text>
+                            <Text color='brand.600'
+                                  p={2}
+                                  fontWeight='extrabold'>
+                                Начало и завершение аренды возможны только в
+                                пунктах проката организации проката
+                            </Text>
+                        </Stack>
+                    </HStack>
+                }
                 <HStack overflowX='auto'>
                     {inventory?.tariffs?.map(item => (
                         <Stack key={item?.id}
@@ -255,7 +273,31 @@ export function RentModal() {
                             <Tag colorScheme="brand">{rent?.tariff?.deposit} ₽</Tag>
                         </HStack>
                     </Stack>
-                    {rent.status === 'ACTIVE' &&
+                    {!rent?.inventory?.supportsTelemetry &&
+                        <HStack alignItems='start' spacing={1}>
+                            <IoMdInformationCircle size='48' color='pink'/>
+                            <Stack p={1} spacing={0}>
+                                <Text color='brand.600'
+                                      p={2}
+                                      fontWeight='extrabold'>
+                                    Оборудование не поддерживает отслеживание
+                                </Text>
+                                <Text color='brand.600'
+                                      p={2}
+                                      fontWeight='extrabold'>
+                                    Начало и завершение аренды возможны только в
+                                    пунктах проката организации проката
+                                </Text>
+                                <Text color='brand.600'
+                                      p={2}
+                                      fontWeight='extrabold'>
+                                    Для завершения аренды назовите сотруднику пункта проката номер аренды:
+                                    <Badge colorScheme='brand' fontSize='md'>{rent?.id}</Badge>
+                                </Text>
+                            </Stack>
+                        </HStack>
+                    }
+                    {(rent?.status === 'ACTIVE' && rent?.inventory?.supportsTelemetry) &&
                         <HStack justifyContent='center' w='100%'>
                             <Button w={250}
                                     isDisabled={loading}
@@ -305,57 +347,89 @@ export function OfficeModal() {
                             <FaParking size={32} color='white'/>
                         </Center>
 
-                        <Text bgGradient="linear(to-l, #7928CA,#FF0080)"
-                              bgClip='text'
-                              fontSize="4xl"
-                              textAlign='start'
-                              fontWeight="extrabold">
-                            {office?.alias}
-                        </Text>
+                        <Stack spacing={0}>
+                            <Text color='brand.600'
+                                  fontSize="2xl"
+                                  textAlign='start'
+                                  fontWeight="extrabold">
+                                {office?.alias}
+                            </Text>
+                            <HStack spacing={1}>
+                                <Text fontSize="md"
+                                      textAlign='start'>
+                                    Пункт проката
+                                </Text>
+                            </HStack>
+                        </Stack>
                     </HStack>
                     <CloseButton onClick={() => setOffice(undefined)}/>
                 </HStack>
                 <VStack w='100' divider={<Divider/>}>
                     <VStack fontWeight='extrabold'>
-                        <Text color='brand.800'>Режим работы</Text>
+                        <VStack spacing={0}>
+                            <Text color='brand.800'>Режим работы</Text>
+                        </VStack>
                         <Stack>
                             {(office?.schedules ?? []).map(schedule => {
                                     if (schedule.dayOff)
                                         return (
-                                            <SimpleGrid columns={2}>
-                                                <Tag>{toDayName(schedule.day)}</Tag>
-                                                <Text>Выходной</Text>
-                                            </SimpleGrid>
+                                            <HStack columns={2}>
+                                                <Tag colorScheme='brand' w={10}>
+                                                    <Text textAlign='center' w='100%'>
+                                                        {ShortDaysOfWeek[schedule.day]}
+                                                    </Text>
+                                                </Tag>
+                                                <Text color='darkgray'>Выходной</Text>
+                                            </HStack>
                                         )
                                     return (
-                                        <SimpleGrid columns={2}>
-                                            <Tag>{toDayName(schedule.day)}</Tag>
+                                        <HStack columns={2} gap={2} key={schedule.day} w='100%'>
+                                            <Tag colorScheme='brand' w={10}>
+                                                <Text textAlign='center' w='100%'>
+                                                    {ShortDaysOfWeek[schedule.day]}
+                                                </Text>
+                                            </Tag>
                                             <HStack>
-                                                <Text>{toLocalTime(schedule.start)}</Text>
+                                                <Text>{schedule.start}</Text>
                                                 <Text>-</Text>
-                                                <Text>{toLocalTime(schedule.end)}</Text>
+                                                <Text>{schedule.end}</Text>
                                             </HStack>
-                                        </SimpleGrid>
+                                        </HStack>
                                     )
                                 }
                             )}
                         </Stack>
                     </VStack>
-                    <VStack fontWeight='extrabold' w='100%'>
+                    <VStack w='100%'>
                         {office?.inventories?.map(inventory => (
                             <HStack bgColor='white'
+                                    key={inventory.id}
+                                    justifyContent='space-between'
+                                    w='100%'
                                     p={3}
                                     rounded={10}
                                     onClick={() => onSelectInventory(inventory)}>
-                                <Stack px={2}>
-                                    <Text fontSize='xl' color='brand.600'>
-                                        {inventory.alias}
-                                    </Text>
-                                    <Text>
-                                        {inventory.model.name}
-                                    </Text>
-                                </Stack>
-                                <EquipmentLogo type={inventory.model.type} size={32}/>
+                                <HStack>
+                                    <Center bgGradient="linear(to-l, #7928CA,#FF0080)" p={2} rounded={10}>
+                                        <EquipmentLogo type={inventory?.model?.type} size={32} color='white'/>
+                                    </Center>
+
+                                    <Stack spacing={0}>
+                                        <Text color='brand.600'
+                                              fontSize="2xl"
+                                              textAlign='start'
+                                              fontWeight="extrabold">
+                                            {inventory?.model?.name}
+                                        </Text>
+                                        <HStack spacing={1}>
+                                            <IoMdQrScanner/>
+                                            <Text fontSize="md"
+                                                  textAlign='start'>
+                                                {inventory?.alias}
+                                            </Text>
+                                        </HStack>
+                                    </Stack>
+                                </HStack>
                             </HStack>
                         ))}
                     </VStack>
@@ -431,7 +505,8 @@ export function RentCounter() {
                                     <VStack onClick={() => onClick(rent)}>
                                         <HStack>
                                             <Center bgGradient="linear(to-l, #7928CA,#FF0080)" p={2} rounded={10}>
-                                                <EquipmentLogo type={rent?.inventory?.model?.type} size={32} color='white'/>
+                                                <EquipmentLogo type={rent?.inventory?.model?.type} size={32}
+                                                               color='white'/>
                                             </Center>
                                             <Stack spacing={0}>
                                                 <Text color='brand.600'

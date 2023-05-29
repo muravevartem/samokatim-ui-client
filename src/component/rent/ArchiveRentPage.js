@@ -110,7 +110,7 @@ function RentCard({rent, onRetry}) {
                         }
                     </Heading>
                     <Heading size='md'>
-                        {moment(rent.startTime).format('lll')}
+                        {rent.startTime ? moment(rent.startTime).format('lll') : ' - '}
                     </Heading>
                     <HStack>
                         <IoMdCash/>
@@ -120,7 +120,7 @@ function RentCard({rent, onRetry}) {
                         <Button size='sm'
                                 onClick={onRetry}
                                 colorScheme='brand'>
-                            Повторить оплату
+                            Оплатить
                         </Button>
                     }
                 </VStack>
