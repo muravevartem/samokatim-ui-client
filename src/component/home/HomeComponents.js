@@ -412,7 +412,7 @@ export function OfficeModal() {
                         <Text color='brand.600' fontWeight='bold'>{office?.address}</Text>
                     </HStack>
                     <HStack>
-                        {/*<Image src={fileService.url(office?.organization?.logo)} rounded='50%' boxSize={14}/>*/}
+                        <Image src={fileService.url(office?.organization?.logo)} rounded='50%' boxSize={14}/>
                         <Text color='brand.600' fontWeight='bold'>{office?.organization?.name}</Text>
                     </HStack>
                 </Stack>
