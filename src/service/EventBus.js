@@ -15,7 +15,6 @@ class EventBus {
 
     raise(event, payload) {
         let handlers = this.eventHandlers[event] ?? [];
-        console.log(handlers.length)
         handlers.forEach(value => value(payload))
     }
 }

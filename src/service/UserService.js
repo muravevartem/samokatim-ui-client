@@ -17,7 +17,6 @@ class UserService {
                 username: cred.username,
                 password: cred.password
             });
-            console.log(response)
             let data = response.data;
             this.token = data.accessToken;
             localStorage.setItem('token', data.accessToken);
@@ -45,7 +44,6 @@ class UserService {
     }
 
     authenticated() {
-        console.log(this.token);
         return this.token;
     }
 
