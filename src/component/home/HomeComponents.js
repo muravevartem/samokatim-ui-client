@@ -1,9 +1,10 @@
 import {
+    Alert,
     AlertDialog,
     AlertDialogBody,
     AlertDialogContent,
     AlertDialogHeader,
-    AlertDialogOverlay,
+    AlertDialogOverlay, AlertIcon,
     Badge,
     Button,
     Center,
@@ -18,7 +19,6 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
-    SimpleGrid,
     Slide,
     Stack,
     Tag,
@@ -27,7 +27,7 @@ import {
     useToast,
     VStack
 } from "@chakra-ui/react";
-import {EquipmentLogo, ShortDaysOfWeek, tariffUnit, toDayName, toLocalTime, zIndexes} from "../util.js";
+import {EquipmentLogo, NumberOfDayWeek, ShortDaysOfWeek, tariffUnit, zIndexes} from "../util.js";
 import React, {useEffect, useState} from "react";
 import {AppEvents, eventBus} from "../../service/EventBus.js";
 import {errorConverter} from "../../error/ErrorConverter.js";
@@ -36,12 +36,13 @@ import moment from "moment";
 import {FaParking} from "react-icons/fa";
 import {useNavigate} from "react-router-dom";
 import {fileService} from "../../service/FileService.js";
-import {IoMdInformation, IoMdInformationCircle, IoMdQrScanner} from "react-icons/io";
+import {IoMdInformationCircle, IoMdQrScanner} from "react-icons/io";
 import {MdBikeScooter} from "react-icons/md";
 import {FcStart} from "react-icons/fc";
 
 export function InventoryModal() {
     const [inventory, setInventory] = useState();
+    const [disabled, setDisabled] = useState(true);
     const [selectedTariff, setSelectedTariff] = useState();
     const [loading, setLoading] = useState(false);
     let {isOpen, onOpen, onClose} = useDisclosure();
@@ -64,7 +65,11 @@ export function InventoryModal() {
     }
 
     useEffect(() => {
-        let onSelectedInventory = eventBus.on(AppEvents.SelectedInventory, data => setInventory(data));
+        let onSelectedInventory = eventBus.on(AppEvents.SelectedInventory,
+            data => {
+                setInventory(data.inventory);
+                setDisabled(data.disabled ?? false)
+            });
         return () => {
             onSelectedInventory()
         }
@@ -104,12 +109,15 @@ export function InventoryModal() {
                    zIndex={zIndexes.Popover}>
                 <HStack justifyContent='space-between'>
                     <HStack>
-                        <Center bgGradient="linear(to-l, #7928CA,#FF0080)" p={2} rounded={10}>
+                        <Center bgGradient={disabled ? null : "linear(to-l, #7928CA,#FF0080)"}
+                                bgColor={disabled ? 'gray' : null}
+                                p={2}
+                                rounded={10}>
                             <EquipmentLogo type={inventory?.model?.type} size={32} color='white'/>
                         </Center>
 
                         <Stack spacing={0}>
-                            <Text color='brand.600'
+                            <Text color={disabled ? 'gray' : 'brand.600'}
                                   fontSize="2xl"
                                   textAlign='start'
                                   fontWeight="extrabold">
@@ -134,7 +142,7 @@ export function InventoryModal() {
                     <HStack alignItems='start' spacing={1}>
                         <IoMdInformationCircle size='48' color='pink'/>
                         <Stack p={1} spacing={0}>
-                            <Text color='brand.600'
+                            <Text color={'brand.600'}
                                   p={2}
                                   fontWeight='extrabold'>
                                 Оборудование не поддерживает отслеживание
@@ -151,13 +159,15 @@ export function InventoryModal() {
                 <HStack overflowX='auto'>
                     {inventory?.tariffs?.map(item => (
                         <Stack key={item?.id}
-                               bgColor='brand.300'
+                               bgColor={disabled ? 'gray' : 'brand.300'}
                                cursor='pointer'
                                rounded={10}
                                p={2}
                                onClick={() => {
-                                   setSelectedTariff(item);
-                                   onOpen();
+                                   if (!disabled) {
+                                       setSelectedTariff(item);
+                                       onOpen();
+                                   }
                                }}
                                w='max-content'>
                             <Stack spacing={0}>
@@ -173,6 +183,20 @@ export function InventoryModal() {
                         </Stack>
                     ))}
                 </HStack>
+                {disabled &&
+                    <Stack bgColor={'gray'}
+                           cursor='pointer'
+                           rounded={10}
+                           p={2}>
+                        <Stack spacing={0}>
+                            <Text color='white'
+                                  textAlign='center'
+                                  fontWeight='extrabold'>
+                                Пункт проката в котором находится данный инвентарь закрыт
+                            </Text>
+                        </Stack>
+                    </Stack>
+                }
             </Stack>
         </Slide>
     )
@@ -316,16 +340,35 @@ export function RentModal() {
 export function OfficeModal() {
     const [office, setOffice] = useState();
     const [loading, setLoading] = useState(false);
+    let [officeClosed, setOfficeClosed] = useState(false);
     let toast = useToast();
 
     function onSelectInventory(inventory) {
         setOffice(undefined);
-        eventBus.raise(AppEvents.SelectedInventory, inventory)
+        eventBus.raise(AppEvents.SelectedInventory,
+            {
+                inventory: inventory,
+                disabled: officeClosed
+            })
     }
 
 
     useEffect(() => {
-        let onSelectedOffice = eventBus.on(AppEvents.SelectedOffice, data => setOffice(data));
+        let onSelectedOffice = eventBus.on(AppEvents.SelectedOffice, data => {
+            setOffice(data)
+            let now = moment();
+            let todayDay = now.isoWeekday();
+            let todaySDay = data.schedules.filter(sDay => NumberOfDayWeek[sDay.day] === todayDay)[0];
+            if (todaySDay.dayOff) {
+                setOfficeClosed(true);
+                return;
+            }
+            let splitedStart = todaySDay.start.split(':').map(str => Number.parseInt(str));
+            let splitedEnd = todaySDay.end.split(':').map(str => Number.parseInt(str));
+            let startTime = moment().set({hour: splitedStart[0], minute: splitedStart[1]});
+            let endTime = moment().set({hour: splitedEnd[0], minute: splitedEnd[1]});
+            setOfficeClosed(!now.isBetween(startTime, endTime));
+        });
         return () => {
             onSelectedOffice()
         }
@@ -364,6 +407,15 @@ export function OfficeModal() {
                     </HStack>
                     <CloseButton onClick={() => setOffice(undefined)}/>
                 </HStack>
+                <Stack spacing={0}>
+                    <HStack>
+                        <Text color='brand.600' fontWeight='bold'>{office?.address}</Text>
+                    </HStack>
+                    <HStack>
+                        {/*<Image src={fileService.url(office?.organization?.logo)} rounded='50%' boxSize={14}/>*/}
+                        <Text color='brand.600' fontWeight='bold'>{office?.organization?.name}</Text>
+                    </HStack>
+                </Stack>
                 <VStack w='100' divider={<Divider/>}>
                     <VStack fontWeight='extrabold'>
                         <VStack spacing={0}>
@@ -410,12 +462,15 @@ export function OfficeModal() {
                                     rounded={10}
                                     onClick={() => onSelectInventory(inventory)}>
                                 <HStack>
-                                    <Center bgGradient="linear(to-l, #7928CA,#FF0080)" p={2} rounded={10}>
+                                    <Center bgGradient={officeClosed ? null : "linear(to-l, #7928CA,#FF0080)"}
+                                            bgColor={officeClosed ? 'gray' : null}
+                                            p={2}
+                                            rounded={10}>
                                         <EquipmentLogo type={inventory?.model?.type} size={32} color='white'/>
                                     </Center>
 
                                     <Stack spacing={0}>
-                                        <Text color='brand.600'
+                                        <Text color={officeClosed ? 'gray' : 'brand.600'}
                                               fontSize="2xl"
                                               textAlign='start'
                                               fontWeight="extrabold">
@@ -433,6 +488,15 @@ export function OfficeModal() {
                             </HStack>
                         ))}
                     </VStack>
+                    {officeClosed &&
+                        <Alert colorScheme='brand'
+                               color='brand.600'
+                               fontWeight='extrabold'
+                               rounded={10}>
+                            <AlertIcon/>
+                            Пункт проката сейчас не работает
+                        </Alert>
+                    }
                 </VStack>
             </Stack>
         </Slide>

@@ -37,25 +37,14 @@ export const ShortDaysOfWeek = {
     SUNDAY: 'Вс'
 }
 
-export const toDayName = (dayOfWeek) => {
-    switch (dayOfWeek) {
-        case 'MONDAY':
-            return 'Понедельник';
-        case 'TUESDAY':
-            return 'Вторник';
-        case 'WEDNESDAY':
-            return 'Среда';
-        case 'THURSDAY':
-            return 'Четверг';
-        case 'FRIDAY':
-            return 'Пятница';
-        case 'SATURDAY':
-            return 'Суббота';
-        case 'SUNDAY':
-            return 'Воскресенье';
-        default:
-            return undefined;
-    }
+export const NumberOfDayWeek = {
+    MONDAY: 1,
+    TUESDAY: 2,
+    WEDNESDAY: 3,
+    THURSDAY: 4,
+    FRIDAY: 5,
+    SATURDAY: 6,
+    SUNDAY: 7
 }
 
 export const tariffUnit = {

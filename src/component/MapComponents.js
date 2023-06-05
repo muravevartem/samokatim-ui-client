@@ -116,7 +116,7 @@ export function ApplicationMarkers() {
                         key={'free' + m.id}
                         eventHandlers={{
                             click() {
-                                eventBus.raise(AppEvents.SelectedInventory, m)
+                                eventBus.raise(AppEvents.SelectedInventory, {inventory: m})
                             }
                         }}
                         position={[m.lastMonitoringRecord.lat, m.lastMonitoringRecord.lng]}>
