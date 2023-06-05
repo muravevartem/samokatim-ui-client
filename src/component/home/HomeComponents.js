@@ -407,14 +407,12 @@ export function OfficeModal() {
                     </HStack>
                     <CloseButton onClick={() => setOffice(undefined)}/>
                 </HStack>
-                <Stack spacing={0}>
-                    <HStack>
-                        <Text color='brand.600' fontWeight='bold'>{office?.address}</Text>
-                    </HStack>
-                    <HStack>
-                        <Image src={fileService.url(office?.organization?.logo)} rounded='50%' boxSize={14}/>
-                        <Text color='brand.600' fontWeight='bold'>{office?.organization?.name}</Text>
-                    </HStack>
+                <HStack>
+                    <Image src={fileService.url(office?.organization?.logo)} rounded='50%' boxSize={14}/>
+                    <Text color='brand.600' fontWeight='bold'>{office?.organization?.name}</Text>
+                </HStack>
+                <Stack>
+                    <Text color='brand.600' fontWeight='bold' textAlign='center'>{office?.address}</Text>
                 </Stack>
                 <VStack w='100' divider={<Divider/>}>
                     <VStack fontWeight='extrabold'>

@@ -12,8 +12,11 @@ class FileService {
     }
 
     url(file) {
-        let url = `${$api.defaults.baseURL}/api/v1/files/${file.id}`;
-        return url
+        if (file) {
+            let url = `${$api.defaults.baseURL}/api/v1/files/${file.id}`;
+            return url
+        }
+        return '/icons/domain-custom.png'
     }
 }
 
