@@ -84,14 +84,14 @@ export const zIndexes = {
     Profile: 1020
 }
 
-export function EquipmentLogo(props) {
-    if (props.type === 'BICYCLE')
-        return <MdPedalBike {...props}/>
-    if (props.type === 'BICYCLE_EL')
-        return <MdElectricBike {...props}/>
-    if (props.type === 'SCOOTER_EL')
-        return <MdElectricScooter {...props}/>
-    if (props.type === 'SCOOTER')
-        return <BsScooter {...props}/>
-    return <MdTaxiAlert {...props}/>
+export function EquipmentLogo(model) {
+    if (model.type === 'BICYCLE')
+        return <MdPedalBike {...model}/>
+    if (model.type === 'BICYCLE_EL')
+        return <MdElectricBike {...model}/>
+    if (model.type === 'SCOOTER_EL')
+        return <MdElectricScooter {...model}/>
+    if (model.type === 'SCOOTER')
+        return <BsScooter {...model}/>
+    return <MdTaxiAlert {...model}/>
 }

@@ -17,14 +17,32 @@ export const Icons = {
         iconSize: new L.Point(24, 24)
     }),
     ME_ICON: new L.Icon({
-        iconUrl: '/icons/My-location.png',
+        iconUrl: '/icons/account-tie-custom.png',
         iconSize: new L.Point(24, 24)
     }),
     PARKING_ICON: new L.Icon({
-        iconUrl: '/icons/Parking.png',
+        iconUrl: '/icons/parking-custom.png',
         iconSize: new L.Point(32,32)
     })
+}
 
+export const MapInventoryIcon = {
+    BICYCLE: new L.Icon({
+        iconUrl: '/icons/bicycle-custom.png',
+        iconSize: new L.Point(24,24)
+    }),
+    BICYCLE_EL: new L.Icon({
+        iconUrl: '/icons/bicycle-electric-custom.png',
+        iconSize: new L.Point(24,24)
+    }),
+    SCOOTER: new L.Icon({
+        iconUrl: '/icons/scooter-custom.png',
+        iconSize: new L.Point(24,24)
+    }),
+    SCOOTER_EL: new L.Icon({
+        iconUrl: '/icons/scooter-electric-custom.png',
+        iconSize: new L.Point(24,24)
+    })
 }
 
 
@@ -94,7 +112,7 @@ export function ApplicationMarkers() {
     return (
         <>
             {(state.free ?? []).map(m =>
-                <Marker icon={Icons.INVENTORY_ICON}
+                <Marker icon={MapInventoryIcon[m.model.type]}
                         key={'free' + m.id}
                         eventHandlers={{
                             click() {
