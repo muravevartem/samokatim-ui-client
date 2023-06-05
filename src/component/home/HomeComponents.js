@@ -376,7 +376,7 @@ export function OfficeModal() {
 
 
     return (
-        <Slide in={office} style={{zIndex: zIndexes.Popover}} direction='bottom'>
+        <Slide in={office} style={{zIndex: zIndexes.Popover, overflow: 'auto', maxHeight: '100%'}} direction='bottom'>
             <Stack p={3}
                    backdropFilter='blur(10px)'
                    spacing={4}
@@ -423,7 +423,7 @@ export function OfficeModal() {
                             {(office?.schedules ?? []).map(schedule => {
                                     if (schedule.dayOff)
                                         return (
-                                            <HStack columns={2}>
+                                            <HStack columns={2} key={schedule.day}>
                                                 <Tag colorScheme='brand' w={10}>
                                                     <Text textAlign='center' w='100%'>
                                                         {ShortDaysOfWeek[schedule.day]}
