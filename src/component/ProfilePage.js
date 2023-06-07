@@ -93,7 +93,7 @@ export function ProfilePage() {
                              loaded={!loading}
                              type='email'
                              v={user.email ?? ''}/>
-                <NotificationInfo loading={loading}/>
+                {/*<NotificationInfo loading={loading}/>*/}
                 <ButtonBlock/>
             </VStack>
         </VStack>
