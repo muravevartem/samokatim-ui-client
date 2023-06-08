@@ -42,7 +42,7 @@ export function SignUpPage() {
         (<InfoStep value={client}/>)
     ]
 
-    console.log(step)
+    // console.log(step)
 
     return steps[step];
 }

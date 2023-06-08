@@ -13,7 +13,7 @@ export function UserAvatar(props) {
     //         let u = await userService.me();
     //         setUser(u);
     //     } catch (e) {
-    //         console.log(e)
+    //         // console.log(e)
     //         toast({
     //             status: 'error',
     //             title: 'Ошибка',

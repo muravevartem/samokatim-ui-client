@@ -51,7 +51,7 @@ function HistoricalOrderBlock() {
         try {
             setLoading(true);
             const pageable = {page: data.page + 1, size: data.size, sort: 'endTime,desc', last: true};
-            console.log(pageable);
+            // console.log(pageable);
             let rents = await rentService.getAll(pageable);
             setData({
                 content: [...data.content, ...rents.content],

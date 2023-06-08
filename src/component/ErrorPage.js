@@ -5,7 +5,7 @@ import {routes} from "../routes.js";
 
 export function ErrorPage() {
     const error = useRouteError();
-    console.log(error);
+    // console.log(error);
 
     return <>Ошибка</>
 }

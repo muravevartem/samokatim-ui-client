@@ -28,7 +28,7 @@ export function InputImage({children, onUpload}) {
     let [files, setFiles] = useState([]);
 
     useState(() => {
-        console.log(files)
+        // console.log(files)
     }, [files])
 
     return (
@@ -63,7 +63,7 @@ function FileUpload({files, setFiles, multiple = false}) {
     const [loading, setLoading] = useState(false);
     const toast = useToast();
 
-    console.log(files)
+    // console.log(files)
 
     async function uploadFile(filesForUpload) {
         try {
